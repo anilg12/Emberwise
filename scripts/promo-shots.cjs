@@ -1,7 +1,7 @@
 'use strict';
 // High-resolution stills of the real app for promo material (LinkedIn carousel etc.).
 // Usage: npx electron scripts/promo-shots.cjs --scene=today --out=promo/out/shots
-// Scenes: today, levelup, focus, hero, shop, stats, welcome
+// Scenes: today, levelup, focus, hero, shop, stats, welcome, rewards, mixer, chars, settings, about
 
 const fs = require('node:fs');
 const os = require('node:os');
@@ -14,8 +14,9 @@ const arg = (name, def) => {
 };
 const scene = arg('scene', 'today');
 const out = path.resolve(arg('out', 'promo/out/shots'));
-const THEMES = { today: 'light', levelup: 'light', focus: 'dark', hero: 'light', shop: 'dark', stats: 'dark', welcome: 'light' };
-const theme = THEMES[scene] ?? 'light';
+const THEMES = { today: 'light', levelup: 'light', focus: 'dark', hero: 'light', shop: 'dark', stats: 'dark', welcome: 'light', rewards: 'light', mixer: 'dark', chars: 'light', settings: 'light', about: 'dark' };
+const themeArg = process.argv.find((a) => a.startsWith('--theme='));
+const theme = themeArg ? themeArg.split('=')[1] : (THEMES[scene] ?? 'light');
 
 const ACH = ['first_task', 'tasks_10', 'tasks_50', 'tasks_100', 'first_focus', 'deep_dive', 'focus_5h', 'focus_25h', 'streak_3', 'streak_7', 'streak_30', 'early_bird', 'night_owl', 'epic', 'purposeful', 'habit_7', 'planner', 'quest_day', 'quest_week', 'rank_diligent', 'rank_master', 'rank_legend', 'shopper', 'collector'];
 const iso = (daysAgo, h = 10) => {
@@ -38,7 +39,7 @@ function profile() {
   log.push({ id: 'adj', t: iso(1, 18), kind: 'quest', xp: 670 - log.reduce((s, e) => s + e.xp, 0), gold: 1200, ref: 'h:adj', label: 'tasks3' });
   data.log = log;
   data.streak = { current: 6, best: 9, lastDay: data.streak.lastDay };
-  data.owned = ['pet_cat', 'hat_wizard', 'bg_night', 'hat_flowers', 'bg_meadow', 'pet_owl', 'pet_fox'];
+  data.owned = ['pet_cat', 'hat_wizard', 'bg_night', 'hat_flowers', 'bg_meadow', 'pet_owl', 'pet_fox', 'acc_ember_pin', 'hat_sprout', 'char_guardian'];
   data.equipped = { hat: 'hat_wizard', pet: 'pet_cat', bg: 'bg_night' };
   data.tasks = data.tasks.filter((t) => !t.title.includes('Eski')).slice(0, 5);
   if (scene === 'focus') data.settings.focusMin = 1;
@@ -120,8 +121,35 @@ const SCENES = {
     await wait(900);
     await snap(win, 'shop');
   },
+  async rewards(win, h) {
+    await h.nav(5);
+    await wait(1500);
+    await snap(win, 'rewards');
+  },
+  async mixer(win, h) {
+    await h.nav(2);
+    await wait(1200);
+    await snap(win, 'mixer');
+  },
+  async chars(win, h) {
+    await h.nav(3);
+    await wait(900);
+    await h.js(`document.querySelector('.right .field:last-of-type')?.scrollIntoView({ block: 'center' })`);
+    await wait(700);
+    await snap(win, 'chars');
+  },
+  async settings(win, h) {
+    await h.click('.sidebar .foot .icon-btn:nth-of-type(2)');
+    await wait(1200);
+    await snap(win, 'settings');
+  },
+  async about(win, h) {
+    await h.click('.sidebar .foot .info');
+    await wait(1200);
+    await snap(win, 'about');
+  },
   async stats(win, h) {
-    await h.nav(6);
+    await h.nav(7);
     await wait(1500);
     await snap(win, 'stats');
   },

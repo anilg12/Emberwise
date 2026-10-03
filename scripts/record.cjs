@@ -1,7 +1,7 @@
 'use strict';
 // Records short demo GIFs of the real app for the README.
 // Usage: npx electron scripts/record.cjs --scene=quest --out=docs/media [--theme=light] [--lang=tr]
-// Scenes: quest, focus, hero, shop, theme, onboarding
+// Scenes: quest, focus, hero, shop, theme, onboarding, rewards, sounds, words
 
 const fs = require('node:fs');
 const os = require('node:os');
@@ -18,14 +18,19 @@ const out = path.resolve(arg('out', 'docs/media'));
 const lang = arg('lang', 'tr');
 const WIDTH = Number(arg('gifw', 880));
 
-const THEMES = { quest: 'light', focus: 'dark', hero: 'light', shop: 'dark', theme: 'light', onboarding: 'light' };
+const THEMES = { quest: 'light', focus: 'dark', hero: 'light', shop: 'dark', theme: 'light', onboarding: 'light', rewards: 'light', sounds: 'dark', words: 'light' };
 const theme = arg('theme', THEMES[scene] ?? 'light');
 
 const ALL_ACHIEVEMENTS = [
   'first_task', 'tasks_10', 'tasks_50', 'tasks_100', 'first_focus', 'deep_dive', 'focus_5h', 'focus_25h',
   'streak_3', 'streak_7', 'streak_30', 'early_bird', 'night_owl', 'epic', 'purposeful', 'habit_7', 'planner',
   'quest_day', 'quest_week', 'rank_diligent', 'rank_master', 'rank_legend', 'shopper', 'collector',
+  'login_7', 'login_30', 'login_100', 'journal_7', 'breathe_5',
 ];
+
+function dayKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 
 /* ------------------------------------------------------------ profile */
 
@@ -61,19 +66,33 @@ function profile() {
   data.log = log;
   data.sessions = data.sessions.slice(-12);
   data.streak = { current: 4, best: 9, lastDay: data.streak.lastDay };
-  data.owned = ['pet_cat', 'hat_wizard', 'bg_night', 'hat_flowers', 'bg_meadow', 'pet_owl'];
-  data.equipped = { hat: 'hat_wizard', pet: 'pet_cat', bg: 'bg_night' };
+  data.owned = ['pet_cat', 'hat_wizard', 'bg_night', 'hat_flowers', 'bg_meadow', 'pet_owl', 'acc_ember_pin', 'hat_sprout', 'char_guardian'];
+  data.equipped = { hat: 'hat_wizard', pet: 'pet_cat', bg: 'bg_night', acc: null };
 
   if (scene === 'quest') {
     data.tasks = data.tasks.filter((t) => !t.title.includes('Eski') && !t.title.includes('Leftover')).slice(0, 4);
   }
   if (scene === 'focus') {
     data.settings.focusMin = 1;
-    data.settings.ambient = 'off';
+    data.settings.ambient = {};
   }
   if (scene === 'hero') {
-    data.profile.look = { body: 'f', skin: 1, hair: 1, hairColor: 1, heroClass: 'wizard' };
-    data.equipped = { hat: null, pet: null, bg: 'bg_meadow' };
+    data.profile.look = { body: 'f', skin: 1, hair: 1, hairColor: 1, heroClass: 'wizard', tone: 0 };
+    data.owned.push('char_explorer', 'char_astronaut', 'acc_glasses', 'acc_headphones', 'hat_beret', 'pet_bunny', 'pet_fox', 'bg_beach', 'bg_cafe');
+    data.equipped = { hat: null, pet: null, bg: 'bg_meadow', acc: null };
+  }
+  if (scene === 'rewards') {
+    // Today's gift is still wrapped and the path has a few stops waiting.
+    const today = dayKey(new Date());
+    data.login.claimed = data.login.claimed.filter((k) => k !== `gift:${today}`);
+    data.equipped = { hat: null, pet: 'pet_cat', bg: 'bg_meadow', acc: null };
+    // Keep the gift from levelling up mid-scene.
+    data.log.find((e) => e.id === 'adj').xp -= 90;
+  }
+  if (scene === 'sounds') data.settings.ambient = {};
+  if (scene === 'words') {
+    data.settings.motivation = true;
+    delete data.journal[dayKey(new Date())];
   }
   return data;
 }
@@ -307,19 +326,18 @@ const SCENES = {
     await h.moveTo(1000, 300, 200);
     rec.start(75);
     await wait(400);
-    // .sw: the first 6 are skin tones, the next 8 hair colours.
-    for (const i of [2, 3, 5, 4]) await h.click('.hairs .hair', i, 450);
-    for (const i of [4, 3, 7, 1]) await h.click('.sw', 6 + i, 350);
-    await h.click('.sw', 3, 450);
-    await h.click('.classes .cls', 1, 600);
-    await h.click('.classes .cls', 2, 600);
-    await h.click('.classes .cls', 3, 600);
-    await h.click('.classes .cls', 0, 500);
-    await h.click('.right .seg button', 1, 700);
-    await h.click('.items .item', 2, 700);
-    await h.click('.items .item', 5, 700);
-    await h.click('.items .item', 8, 900);
-    await h.click('.right .seg button', 2, 1600);
+    for (const i of [2, 4]) await h.click('.hairs .hair', i, 450);
+    await h.click('.sw', 6 + 3, 400);
+    // Free characters, then a bought one and the login-only guardian.
+    for (const i of [4, 5, 6, 7]) await h.click('.chars .char', i, 650);
+    await h.click('.chars .char', 8, 650);
+    await h.click('.chars .char', 13, 700);
+    for (const i of [1, 2, 3]) await h.click('.tones .tone', i, 500);
+    await h.click('.chars .char', 14, 800);
+    await h.click('.right .seg button', 1, 800);
+    // Wardrobe items: hats, accessories, companions, realms.
+    for (const i of [2, 4, 7, 9, 12, 15]) await h.click('.items .item', i, 650);
+    await wait(900);
     await rec.stop();
   },
 
@@ -329,13 +347,72 @@ const SCENES = {
     await h.moveTo(900, 250, 200);
     rec.start(75);
     await wait(400);
-    for (const i of [0, 1, 2, 5]) await h.hover('.grid .item', i, 650);
+    for (const i of [0, 1, 3, 5]) await h.hover('.grid .item', i, 650);
     await h.click('.seg button', 1, 700);
-    for (const i of [0, 3, 4, 5]) await h.hover('.grid .item', i, 650);
+    for (const i of [1, 4, 7, 8]) await h.hover('.grid .item', i, 600);
     await h.click('.seg button', 2, 700);
-    for (const i of [3, 4, 5]) await h.hover('.grid .item', i, 650);
+    for (const i of [2, 4, 6]) await h.hover('.grid .item', i, 600);
+    await h.click('.seg button', 3, 700);
+    for (const i of [1, 3, 4]) await h.hover('.grid .item', i, 600);
     await h.click('.grid .item .btn.primary', 0, 450);
     await h.click('.grid .item .btn.primary', 0, 1800);
+    await rec.stop();
+  },
+
+  async rewards(h, rec) {
+    await h.moveTo(900, 300, 200);
+    rec.start(75);
+    await wait(700);
+    await h.click('.gift-banner', 0, 1400);
+    await h.click('.gift-pop .actions .btn.primary', 0, 2600);
+    await h.hover('.gift-pop .actions .btn.ghost', 0, 500);
+    await h.js(`document.querySelector('.gift-pop .actions .btn.ghost').click()`);
+    await wait(1500);
+    await h.hover('.track .stop.ready', 0, 600);
+    await h.click('.track .stop.ready .btn.primary', 0, 1400);
+    await h.click('.track .stop.ready .btn.primary', 0, 1400);
+    await h.js(`document.querySelector('.track').scrollBy({ left: 340, behavior: 'smooth' })`);
+    await wait(900);
+    await h.click('.track .stop.ready .btn.primary', 0, 1600);
+    const last = (await h.js(`document.querySelectorAll('.track .stop.claimed .btn.soft').length`)) - 1;
+    await h.click('.track .stop.claimed .btn.soft', last, 1400);
+    await h.js(`document.querySelector('.scroller').scrollTo({ top: 900, behavior: 'smooth' })`);
+    await wait(2000);
+    await rec.stop();
+  },
+
+  async sounds(h, rec) {
+    await h.js(`document.querySelectorAll('.nav-item')[2].click()`);
+    await wait(900);
+    await h.moveTo(1100, 300, 200);
+    rec.start(75);
+    await wait(500);
+    for (const i of [7, 0]) await h.click('.mixer .tile-btn', i, 800);
+    await h.hover('.mixer .tile.on .t-level', 0, 600);
+    await h.js(`(() => { const el = document.querySelector('.mixer .tile.on .t-level'); el.value = 0.35; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    await wait(700);
+    await h.click('.mixer .tile-btn', 9, 800);
+    await h.js(`document.querySelector('.scroller').scrollTo({ top: 420, behavior: 'smooth' })`);
+    await wait(900);
+    for (const i of [1, 3, 2]) await h.click('.mixer .chip-btn', i, 1100);
+    await h.click('.breathe-btn', 0, 900);
+    await h.click('.breathe .btn.primary', 0, 6500);
+    await rec.stop();
+  },
+
+  async words(h, rec) {
+    await h.js(`document.querySelector('.scroller').scrollTo({ top: 560 })`);
+    await wait(700);
+    await h.moveTo(1100, 360, 200);
+    rec.start(75);
+    await wait(600);
+    await h.click('.words .tools .icon-btn', 0, 1300);
+    await h.click('.words .tools .icon-btn', 0, 1300);
+    await h.click('.words .heart', 0, 900);
+    await h.click('.mood .face', 3, 2600);
+    await h.click('.mood .note input', 0, 300);
+    await h.type(lang === 'tr' ? 'Güneşli bir sabah yürüyüşü' : 'A sunny morning walk', 60);
+    await wait(3200);
     await rec.stop();
   },
 
@@ -362,15 +439,14 @@ const SCENES = {
     await h.type('Anıl', 110);
     await wait(400);
     await h.click('.nav .btn.primary', 0, 900);
-    // .seg buttons on this step: [female, male, wizard, knight, ranger, bard]
     await h.click('.seg button', 1, 500);
     for (const i of [0, 5, 2]) await h.click('.hairs .hair', i, 380);
     await h.click('.sw', 2, 350);
     await h.click('.sw', 6 + 3, 350);
-    await h.click('.seg button', 3, 500);
-    await h.click('.seg button', 4, 600);
+    for (const i of [1, 4, 7, 2]) await h.click('.chars .char', i, 500);
     await h.click('.nav .btn.primary', 0, 1300);
-    await h.click('.nav .btn.primary', 0, 2600);
+    await h.click('.nav .btn.primary', 0, 2800);
+    if (await h.js(`!!document.querySelector('.gift-pop')`)) await h.click('.gift-pop .actions .btn.primary', 0, 2600);
     await rec.stop();
   },
 };

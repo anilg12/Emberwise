@@ -1,4 +1,4 @@
-// Every sound in Emberwise is synthesized on the fly — no audio files, fully offline.
+// Effect sounds are synthesized on the fly — no audio files, fully offline. (Ambience lives in ambience.ts.)
 
 let ctx: AudioContext | null = null;
 let sfxBus: GainNode | null = null;

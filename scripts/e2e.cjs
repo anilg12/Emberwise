@@ -73,6 +73,18 @@ async function run(win) {
   check(await exists('.shell'), 'onboarding finishes into the app');
   check((await text('h1')).includes('Anıl'), 'greeting uses the hero name');
   check((await js(`document.querySelectorAll('.list .task').length`)) === 1, 'a starter quest is created');
+  check(!(await exists('.sidebar .sig')), 'no signature in the sidebar');
+
+  console.log('Daily gift');
+  await wait(1000);
+  check(await exists('.gift-pop'), 'the first daily gift opens on its own');
+  const goldBefore = await text('.hero-card .stat.gold');
+  await click('.gift-pop .actions .btn.primary');
+  await wait(900);
+  check((await text('.hero-card .stat.gold')) !== goldBefore, `opening the gift pays out (${goldBefore} → ${await text('.hero-card .stat.gold')})`);
+  await key('.modal-root', 'Escape');
+  await wait(600);
+  check(!(await exists('.gift-pop')), 'the gift window closes');
 
   console.log('Quests');
   await type('.qa input', 'Test görevi 23:59');
@@ -110,15 +122,46 @@ async function run(win) {
   check((await js(`[...document.querySelectorAll('.task .title')].some(e => e.textContent.trim() === 'Editörden görev')`)), 'saved quest appears in the list');
 
   console.log('Pages');
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 8; i++) {
     await js(`document.querySelectorAll('.nav-item')[${i}].click()`);
     await wait(500);
     check(await exists('.page'), `page ${i + 1} renders`);
   }
 
+  console.log('Rewards');
+  await js(`document.querySelectorAll('.nav-item')[5].click()`);
+  await wait(800);
+  check((await js(`document.querySelectorAll('.track .stop').length`)) >= 15, 'the reward path lists its stops');
+  check(await exists('.stop.ready .btn.primary'), 'day 1 on the path is ready to claim');
+  await click('.stop.ready .btn.primary');
+  await wait(600);
+  check(await exists('.stop.claimed'), 'claiming a path stop marks it claimed');
+
+  console.log('Mood & words');
+  await js(`document.querySelectorAll('.nav-item')[0].click()`);
+  await wait(700);
+  check(await exists('.words .text'), 'the words of the day are shown');
+  await click('.mood .face:nth-child(4)');
+  await wait(500);
+  check(await exists('.mood .note input'), 'picking a mood opens the gratitude note');
+
+  console.log('Ambience');
+  const bytes = await js(`window.ember.readSound('cafe').then(b => b ? b.byteLength : 0)`);
+  check(bytes > 100000, `the café loop ships with the app (${Math.round(bytes / 1024)} KB)`);
+  check((await js(`window.ember.readSound('../package')`)) === null, 'the sound bridge refuses other files');
+  const secs = await js(`window.ember.readSound('rain').then(b => new AudioContext().decodeAudioData(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength))).then(a => a.duration)`);
+  check(secs > 40, `the rain loop decodes (${secs.toFixed(1)} s)`);
+
   console.log('Focus timer');
   await js(`document.querySelectorAll('.nav-item')[2].click()`);
   await wait(600);
+  const onBefore = await js(`document.querySelectorAll('.mixer .tile.on').length`);
+  await js(`document.querySelector('.mixer .tile:not(.on) .tile-btn').click()`);
+  await wait(400);
+  check((await js(`document.querySelectorAll('.mixer .tile.on').length`)) === onBefore + 1, 'a sound joins the mix');
+  check(await exists('.mixer .listen.on'), 'the mixer starts listening');
+  await click('.mixer .listen');
+  await wait(300);
   const before = await text('.time');
   await click('.ctl.main');
   await wait(2300);
@@ -132,6 +175,13 @@ async function run(win) {
   check(paused1 === (await text('.time')), 'Space pauses the timer');
   await click('.ctl.ghost[aria-label]');
   await wait(400);
+
+  console.log('About');
+  await click('.sidebar .foot .info');
+  await wait(600);
+  check(await exists('.about .sig svg, .about svg'), 'the About window shows the signature');
+  await key('.modal-root', 'Escape');
+  await wait(500);
 
   console.log('Theme & language');
   const darkBefore = await js(`document.documentElement.classList.contains('dark')`);
@@ -151,6 +201,8 @@ async function run(win) {
   check(saved.tasks.length === 3, 'quests are saved to disk');
   check(saved.settings.lang === 'en', 'settings are saved to disk');
   check(saved.log.some((e) => e.kind === 'task' && e.xp > 0), 'XP log is saved to disk');
+  check(saved.login.total === 1 && saved.login.claimed.includes('path:1'), 'login rewards are saved to disk');
+  check(Object.keys(saved.journal).length === 1, 'the mood journal is saved to disk');
   await wait(300);
 }
 

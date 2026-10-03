@@ -101,11 +101,17 @@ function seed(opts = {}) {
     T(tr ? 'Eski görev — dün kaldı' : 'Leftover from yesterday', { categoryId: 'cat_work', date: dayKey(daysAgo(1)), difficulty: 'easy' }),
   ];
 
+  // 31 visit days over the last six weeks, today included, today's gift already opened.
+  const loginDays = [];
+  for (let i = 42; i >= 0; i--) if (i === 0 || i % 4 !== 1) loginDays.push(dayKey(daysAgo(i)));
+  const journal = {};
+  for (let i = 1; i < 21; i++) if (i % 3) journal[dayKey(daysAgo(i))] = { mood: [4, 5, 3, 4, 2, 5, 4][i % 7], note: '' };
+
   return {
     version: 1,
     createdAt: daysAgo(71).toISOString(),
     onboarded: opts.onboarded !== false,
-    profile: { name: tr ? 'Anıl' : 'Anıl', look: { body: 'm', skin: 1, hair: 0, hairColor: 1, heroClass: 'wizard' } },
+    profile: { name: tr ? 'Anıl' : 'Anıl', look: { body: 'm', skin: 1, hair: 0, hairColor: 1, heroClass: 'wizard', tone: 0 } },
     settings: {
       lang,
       theme: opts.theme || 'light',
@@ -120,8 +126,10 @@ function seed(opts = {}) {
       longEvery: 4,
       autoBreak: true,
       autoFocus: false,
-      ambient: 'rain',
+      ambient: { rain: 0.6, cafe: 0.5 },
       ambientVolume: 0.5,
+      motivation: !!opts.motivation,
+      dailyGoal: 60,
       closeToTray: false,
       openAtLogin: false,
       pinWhileFocus: false,
@@ -135,13 +143,16 @@ function seed(opts = {}) {
     ],
     log,
     sessions,
-    owned: ['pet_cat', 'hat_wizard', 'bg_night', 'hat_party', 'bg_meadow'],
-    equipped: { hat: 'hat_wizard', pet: 'pet_cat', bg: 'bg_night' },
+    owned: ['pet_cat', 'hat_wizard', 'bg_night', 'hat_party', 'bg_meadow', 'acc_ember_pin', 'hat_sprout', 'char_guardian', 'acc_glasses'],
+    equipped: { hat: 'hat_wizard', pet: 'pet_cat', bg: 'bg_night', acc: null },
     shields: 1,
     achievements: {},
     claimed: {},
     streak: { current: 6, best: 9, lastDay: today },
-    counters: { tasksCreated: 120, remindersSet: 12, purchases: 5 },
+    counters: { tasksCreated: 120, remindersSet: 12, purchases: 5, breaths: 2 },
+    login: { total: loginDays.length, streak: 3, best: 9, lastDay: today, days: loginDays, claimed: [`gift:${today}`, 'path:1', 'path:2', 'path:3', 'path:5', 'path:7'] },
+    journal,
+    favorites: ['life:12', 'morning:3', 'life:41'],
     timer: null,
   };
 }

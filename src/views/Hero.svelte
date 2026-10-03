@@ -311,6 +311,8 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
+    position: sticky;
+    top: 0;
   }
   .stage-card {
     padding: 12px;
@@ -680,6 +682,9 @@
   @media (max-width: 1140px) {
     .layout {
       grid-template-columns: 1fr;
+    }
+    .left {
+      position: static;
     }
   }
 </style>

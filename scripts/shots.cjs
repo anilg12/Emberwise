@@ -81,7 +81,7 @@ async function run(win) {
     return;
   }
 
-  const routes = ['today', 'quests', 'focus', 'hero', 'shop', 'awards', 'stats'];
+  const routes = ['today', 'quests', 'focus', 'hero', 'shop', 'rewards', 'awards', 'stats'];
   for (let i = 0; i < routes.length; i++) {
     if (only && !only.split(',').includes(routes[i])) continue;
     await js(win, `document.querySelectorAll('.nav-item')[${i}].click()`);
@@ -91,17 +91,17 @@ async function run(win) {
   if (!only || only.includes('settings')) {
     await js(win, `document.querySelector('.foot .icon-btn:nth-of-type(2)').click()`);
     await wait(1100);
-    await shot(win, '8-settings');
+    await shot(win, '9-settings');
     await js(win, `document.querySelector('.scroller').scrollTop = 99999`);
     await wait(1800);
-    await shot(win, '8b-settings-bottom');
+    await shot(win, '9b-settings-bottom');
   }
   if (!only || only.includes('editor')) {
     await js(win, `document.querySelectorAll('.nav-item')[1].click()`);
     await wait(600);
     await js(win, `document.querySelector('.task .body').click()`);
     await wait(900);
-    await shot(win, '9-editor');
+    await shot(win, '10-editor');
   }
   if (!only || only.includes('levelup')) {
     await js(win, `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);

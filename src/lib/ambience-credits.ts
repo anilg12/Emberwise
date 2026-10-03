@@ -25,7 +25,7 @@ export const AMBIENCE_CREDITS: AmbienceCredit[] = [
   {
     "id": "storm",
     "title": "Light Rain Distant Thunder July 5th 2016",
-    "author": "https://freesound.org/people/kvgarlic/",
+    "author": "kvgarlic (Freesound)",
     "license": "CC0",
     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
     "url": "https://commons.wikimedia.org/wiki/File:Light_Rain_Distant_Thunder_July_5th_2016.wav",
