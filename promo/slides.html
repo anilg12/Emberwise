@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Emberwise — LinkedIn carousel</title>
+<link rel="stylesheet" href="../node_modules/@fontsource-variable/fraunces/full.css">
+<link rel="stylesheet" href="../node_modules/@fontsource-variable/fraunces/full-italic.css">
+<link rel="stylesheet" href="../node_modules/@fontsource-variable/nunito/wght.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/caveat/700.css">
+<style>
+  @page { size: 1080px 1350px; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'Nunito Variable', sans-serif; -webkit-font-smoothing: antialiased; }
+  .slide {
+    position: relative; width: 1080px; height: 1350px; overflow: hidden;
+    display: none; page-break-after: always; break-after: page;
+    --ink: #2b2335; --ink2: #574d63; --ink3: #8a7f95; --bg: #fbf6ee; --accent: #ee6c3a;
+    background: var(--bg); color: var(--ink);
+  }
+  body[data-slide="all"] .slide { display: block; }
+  body[data-slide="1"] .s1, body[data-slide="2"] .s2, body[data-slide="3"] .s3, body[data-slide="4"] .s4,
+  body[data-slide="5"] .s5, body[data-slide="6"] .s6, body[data-slide="7"] .s7, body[data-slide="8"] .s8,
+  body[data-slide="cover"] .s1 { display: block; }
+  body[data-slide="cover"] .s1 .foot .swipe { display: none; }
+
+  .dark { --ink: #f6eee4; --ink2: #d6cbd9; --ink3: #a597b2; --bg: #17131f; }
+  .glow::before, .glow::after { content: ''; position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+  .glow::before { width: 700px; height: 700px; left: -220px; top: -260px; background: rgba(255, 140, 80, .28); }
+  .glow::after { width: 640px; height: 640px; right: -240px; bottom: -240px; background: rgba(242, 181, 79, .22); }
+  .dark.glow::before { background: rgba(255, 125, 69, .22); }
+  .dark.glow::after { background: rgba(138, 107, 209, .22); }
+
+  .pad { position: absolute; inset: 0; padding: 84px 84px 0; display: flex; flex-direction: column; }
+  .pill { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 22px; border-radius: 99px;
+    font-weight: 800; font-size: 22px; letter-spacing: .02em; background: rgba(238, 108, 58, .12); color: #c9501f; }
+  .dark .pill { background: rgba(255, 129, 80, .16); color: #ffa27a; }
+  h1, h2 { font-family: 'Fraunces Variable', serif; font-weight: 650; letter-spacing: -0.02em; margin: 0; font-variation-settings: 'SOFT' 100; }
+  h1 { font-size: 96px; line-height: 1.02; margin-top: 30px; }
+  h2 { font-size: 78px; line-height: 1.04; margin-top: 26px; }
+  .lead { font-size: 33px; line-height: 1.42; color: var(--ink2); margin: 26px 0 0; font-weight: 600; max-width: 880px; }
+  .lead b { color: var(--ink); font-weight: 800; }
+  em.u { font-style: normal; background: linear-gradient(100deg, #ffbe55, #f4743b 55%, #e2493f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 330px; z-index: 2; background: linear-gradient(to bottom, transparent, var(--bg) 66%); }
+  .foot { z-index: 3; position: absolute; left: 84px; right: 84px; bottom: 56px; display: flex; align-items: center; justify-content: space-between;
+    font-weight: 800; font-size: 24px; color: var(--ink3); }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: 'Fraunces Variable', serif; font-weight: 700; font-size: 30px; color: var(--ink); }
+  .swipe { display: flex; align-items: center; gap: 12px; }
+  .swipe span.arrow { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 30px; }
+  .page { font-variant-numeric: tabular-nums; }
+
+  .shot { position: absolute; border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px -20px rgba(40, 20, 10, .45), 0 0 0 1px rgba(0,0,0,.06); }
+  .dark .shot { box-shadow: 0 30px 80px -20px rgba(0,0,0,.7), 0 0 0 1px rgba(255,255,255,.08); }
+  .shot img { display: block; width: 100%; }
+
+  /* ---------- slide 2: the 2025 JavaFX app, rebuilt from its source ---------- */
+  .s2 { --bg: #12121f; --ink: #f1f1f6; --ink2: #b9bdd6; --ink3: #7c80a6; background: #12121f; }
+  .s2 .pill { background: rgba(233, 69, 96, .16); color: #ff7d93; }
+  .jfx { position: absolute; left: 50%; top: 560px; transform: translateX(-50%); width: 504px; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 40px 90px -20px rgba(0,0,0,.8), 0 0 0 1px rgba(255,255,255,.1); font-family: 'Segoe UI', system-ui, sans-serif; }
+  .jfx .tb { height: 34px; background: #f3f3f3; display: flex; align-items: center; justify-content: space-between; padding-left: 12px; font-size: 13px; color: #222; }
+  .jfx .tb .ctl { display: flex; } .jfx .tb .ctl span { width: 44px; height: 34px; display: grid; place-items: center; font-size: 13px; color: #444; }
+  .jfx .body { background: #1a1a2e; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .jfx .panel { background: #16213e; border-radius: 10px; padding: 12px; }
+  .jfx .center { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .jfx .emoji { font-size: 58px; line-height: 1.1; font-family: 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif; }
+  .jfx .toggles { display: flex; gap: 10px; }
+  .jfx .tg { padding: 4px 10px; border-radius: 6px; font-size: 12.5px; border: 1px solid #0f3460; background: #16213e; color: #fff; font-family: 'Segoe UI', 'Segoe UI Emoji', sans-serif; }
+  .jfx .tg.on { background: #0f3460; color: #e94560; border-color: #e94560; }
+  .jfx hr { width: 100%; border: 0; border-top: 1px solid #2a3556; margin: 2px 0; }
+  .jfx .stats { display: flex; gap: 20px; font-size: 13px; } .jfx .stats .r { font-weight: 700; font-size: 14px; }
+  .jfx .bar { width: 300px; height: 14px; border-radius: 3px; background: linear-gradient(#d9d9d9, #ececec); border: 1px solid #b5b5b5; overflow: hidden; }
+  .jfx .bar i { display: block; height: 100%; width: 50%; background: linear-gradient(#f16a82, #e94560); }
+  .jfx .hint { font-size: 10px; color: #555577; }
+  .jfx .lbl { font-weight: 700; font-size: 14px; color: #a8dadc; margin-bottom: 8px; }
+  .jfx .tf { background: #0f3460; border-radius: 6px; padding: 6px 9px; font-size: 12.5px; color: #667799; margin-bottom: 8px; }
+  .jfx .tf.v { color: #fff; }
+  .jfx .small { font-size: 12.5px; color: #cccccc; margin-bottom: 6px; }
+  .jfx .spin { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; }
+  .jfx .sp { display: flex; width: 75px; height: 26px; background: #0f3460; border-radius: 3px; overflow: hidden; }
+  .jfx .sp b { flex: 1; color: #fff; font-weight: 400; font-size: 12.5px; display: flex; align-items: center; padding-left: 8px; }
+  .jfx .sp s { width: 18px; text-decoration: none; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 7px; color: #ccc; background: #133b6e; gap: 2px; }
+  .jfx .btn { background: #e94560; color: #fff; font-weight: 700; font-size: 13px; text-align: center; padding: 8px; border-radius: 8px; }
+  .jfx .row { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; background: #0f3460; margin-top: 6px; }
+  .jfx .row.done { background: #1a472a; }
+  .jfx .dot { width: 10px; height: 10px; border-radius: 50%; background: #e94560; flex: none; }
+  .jfx .rt { flex: 1; font-size: 12.5px; color: #dddddd; font-family: 'Segoe UI', 'Segoe UI Emoji', sans-serif; } .jfx .rt small { display: block; color: #a8dadc; font-size: 11px; }
+  .jfx .ok { background: #2ecc71; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 12px; } .jfx .del { background: #555; color: #ccc; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+  .jfx .donetag { color: #2ecc71; font-size: 11px; font-family: 'Segoe UI', 'Segoe UI Emoji', sans-serif; }
+  .caption { position: absolute; left: 0; right: 0; text-align: center; font-size: 22px; font-weight: 700; color: var(--ink3); }
+
+  /* ---------- slide 3: timeline ---------- */
+  .tl { position: absolute; left: 84px; right: 84px; top: 690px; height: 420px; }
+  .tl .line { position: absolute; left: 60px; right: 60px; top: 150px; height: 6px; border-radius: 6px;
+    background: repeating-linear-gradient(90deg, #e0d2bf 0 14px, transparent 14px 26px); }
+  .tl .line i { position: absolute; left: 0; top: 0; height: 6px; width: 18%; border-radius: 6px; background: #ee6c3a; }
+  .tl .line i.end { left: auto; right: 0; width: 18%; background: #ee6c3a; }
+  .tl .node { position: absolute; top: 0; width: 300px; text-align: center; }
+  .tl .node .em { height: 140px; display: flex; align-items: flex-end; justify-content: center; }
+  .tl .node .d { margin-top: 36px; font-family: 'Fraunces Variable', serif; font-weight: 650; font-size: 40px; }
+  .tl .node .t { margin-top: 6px; font-size: 25px; font-weight: 700; color: var(--ink2); line-height: 1.3; }
+  .tl .mid { position: absolute; left: 50%; top: 106px; transform: translateX(-50%); padding: 10px 22px; border-radius: 99px; background: #fff; border: 2px dashed #e0d2bf;
+    font-size: 24px; font-weight: 800; color: var(--ink3); }
+
+  /* ---------- slide 7: features ---------- */
+  .grid { position: absolute; left: 84px; right: 84px; top: 470px; display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .tile { background: #fff; border: 1px solid #ebe0d1; border-radius: 26px; padding: 26px 28px; display: flex; gap: 20px; align-items: flex-start;
+    box-shadow: 0 10px 30px -14px rgba(70,45,30,.22); }
+  .tile .ic { width: 62px; height: 62px; border-radius: 18px; display: grid; place-items: center; flex: none; }
+  .tile strong { display: block; font-size: 29px; font-weight: 800; }
+  .tile span { display: block; font-size: 22px; font-weight: 600; color: var(--ink2); margin-top: 4px; line-height: 1.32; }
+  .ranks { position: absolute; left: 60px; right: 60px; bottom: 150px; }
+  .ranks img { width: 100%; display: block; }
+
+  /* ---------- slide 8: how ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+  .chip { height: 54px; padding: 0 24px; border-radius: 99px; display: inline-flex; align-items: center; font-size: 25px; font-weight: 800;
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); color: var(--ink); }
+  .list { margin: 40px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 20px; }
+  .list li { display: flex; gap: 18px; align-items: flex-start; font-size: 29px; font-weight: 600; color: var(--ink2); line-height: 1.35; }
+  .list li i { flex: none; width: 34px; height: 34px; margin-top: 3px; border-radius: 50%; background: rgba(255,129,80,.18); display: grid; place-items: center; color: #ff9a70; font-style: normal; font-size: 19px; font-weight: 900; }
+  .cta { position: absolute; left: 84px; right: 84px; top: 690px; border-radius: 30px; padding: 34px 40px;
+    background: linear-gradient(135deg, #f8834c, #e2533a); color: #fff; display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    box-shadow: 0 24px 60px -20px rgba(238,108,58,.7); }
+  .cta strong { display: block; font-family: 'Fraunces Variable', serif; font-size: 50px; font-weight: 700; letter-spacing: -0.01em; }
+  .cta span { display: block; font-size: 27px; font-weight: 700; opacity: .92; margin-top: 4px; }
+  .cta .plat { font-size: 22px; font-weight: 800; text-align: right; line-height: 1.6; opacity: .95; }
+  .sig { position: absolute; left: 0; right: 0; top: 960px; text-align: center; }
+  .sig .cap { font-size: 18px; font-weight: 800; letter-spacing: .14em; color: var(--ink3); }
+  .sig .name { font-family: 'Caveat', cursive; font-weight: 700; font-size: 92px; line-height: 1; transform: rotate(-3deg); display: inline-block; margin-top: 4px; }
+  .sig svg { display: block; margin: -6px auto 0; }
+</style>
+</head>
+<body data-slide="all">
+
+<!-- 1 · cover -->
+<section class="slide s1 dark glow">
+  <div class="pad">
+    <span class="pill">Mayıs 2025 → Ekim 2026</span>
+    <h1>Rafa kalkan<br>projemi <em class="u">baştan</em><br>yazdım.</h1>
+    <p class="lead"><b>Odak Menajeri RPG</b> artık <b>Emberwise</b>: Windows ve Mac için görevleri maceraya, odağı XP'ye çeviren bir odak oyunu.</p>
+  </div>
+  <svg style="position:absolute;right:70px;top:120px" width="250" height="260" viewBox="0 0 100 104">
+    <defs>
+      <radialGradient id="h1" cx=".5" cy=".62" r=".5"><stop offset="0" stop-color="#ff9a4d" stop-opacity=".5"/><stop offset="1" stop-color="#ff9a4d" stop-opacity="0"/></radialGradient>
+      <linearGradient id="o1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffbe55"/><stop offset=".55" stop-color="#f4743b"/><stop offset="1" stop-color="#df4640"/></linearGradient>
+      <linearGradient id="i1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffeab0"/><stop offset="1" stop-color="#ffb84d"/></linearGradient>
+    </defs>
+    <ellipse cx="50" cy="66" rx="50" ry="40" fill="url(#h1)"/>
+    <path d="M50 6c4.6 10.4 13.5 17.3 21 26.2C78.4 41 83 50.4 83 63.5 83 84 68.6 99 50 99S17 84 17 63.5c0-11.6 5.4-20.4 12.6-27.8 1.2 7.3 4.6 12.3 10.2 14.6C38.3 35.7 41.6 19 50 6z" fill="url(#o1)"/>
+    <path d="M50 40c3.4 7 9.4 11.4 13.6 16.8 3.2 4.1 4.9 8.4 4.9 13.6C68.5 82.7 60.4 92 50 92s-18.5-9.3-18.5-21.6c0-6.1 2.8-11 6.6-14.8.9 3.7 2.8 6.1 5.7 7.3C43.1 55.4 45.4 47 50 40z" fill="url(#i1)"/>
+    <ellipse cx="41.5" cy="71" rx="3.7" ry="4.5" fill="#43201d"/><ellipse cx="58.5" cy="71" rx="3.7" ry="4.5" fill="#43201d"/>
+    <circle cx="42.9" cy="69.3" r="1.35" fill="#fff"/><circle cx="59.9" cy="69.3" r="1.35" fill="#fff"/>
+    <ellipse cx="34.3" cy="79.2" rx="4.4" ry="2.7" fill="#ff7a6b" opacity=".5"/><ellipse cx="65.7" cy="79.2" rx="4.4" ry="2.7" fill="#ff7a6b" opacity=".5"/>
+    <path d="M45 79.4q5 5.4 10 0" fill="#7a2f28" stroke="#43201d" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <div class="shot" style="left:84px;right:-160px;top:690px;"><img src="out/shots/levelup.png"></div>
+  <div class="fade"></div>
+  <div class="foot" style="bottom:48px"><div class="brand">__LOGO__ Emberwise</div><div class="swipe">Kaydır <span class="arrow">→</span></div></div>
+</section>
+
+<!-- 2 · 2025 -->
+<section class="slide s2">
+  <div class="pad">
+    <span class="pill">Mayıs 2025 · JavaFX</span>
+    <h2>Her şey tek bir<br>Java dosyasıyla başladı.</h2>
+    <p class="lead">Odaklanmakta zorlandığım bir dönemde kendime küçük bir araç yazdım. Görev ekliyor, saati gelince hatırlatıyor, bitirince <b>+50 XP</b> veriyordu.</p>
+  </div>
+  <div class="jfx">
+    <div class="tb"><span>Odak Menajeri RPG</span><div class="ctl"><span>—</span><span>☐</span><span>✕</span></div></div>
+    <div class="body">
+      <div class="panel center">
+        <div class="emoji">🧙</div>
+        <div class="toggles"><span class="tg">👩 Kadın</span><span class="tg on">👨 Erkek</span></div>
+        <hr>
+        <div class="stats"><span style="color:#a8dadc">XP: 50</span><span style="color:#e9c46a">Seviye: 1</span><span class="r" style="color:#e94560">Rütbe: Acemi</span></div>
+        <div class="bar"><i></i></div>
+        <div class="hint">Her 100 XP'de seviye atlarsın</div>
+      </div>
+      <div class="panel">
+        <div class="lbl">Yeni Görev</div>
+        <div class="tf v">Matematik çalış</div>
+        <div class="tf">Neden yapıyorsun? (örn: Sınav için)</div>
+        <div class="small">Hatırlatma saati:</div>
+        <div class="spin"><div class="sp"><b>14</b><s>▲<br>▼</s></div><span style="color:#aaa;font-weight:700">:</span><div class="sp"><b>30</b><s>▲<br>▼</s></div></div>
+        <div class="btn">+ Görev Ekle</div>
+      </div>
+      <div class="panel">
+        <div class="lbl" style="margin-bottom:2px">Görev Listesi</div>
+        <div class="row"><span class="dot"></span><div class="rt">📝 Fizik notlarını oku — Vize için<small>⏰ 16:00</small></div><span class="ok">✓</span><span class="del">✕</span></div>
+        <div class="row done"><span class="dot"></span><div class="rt">📝 Kitap oku<small>⏰ 09:00</small></div><span class="donetag">✅ Tamamlandı</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="caption" style="top:1268px">Orijinal Java kodundan birebir yeniden çizildi</div>
+</section>
+
+<!-- 3 · paused -->
+<section class="slide s3 glow">
+  <div class="pad">
+    <span class="pill">Sonra…</span>
+    <h2>Proje rafa kalktı.<br>Ama fikir hep aklımdaydı.</h2>
+    <p class="lead">Bir buçuk yıl sonra o rafa geri döndüm ve projeyi <b>baştan aşağı</b> yeniden yazdım. Bu sefer yarım bırakmadım.</p>
+  </div>
+  <div class="tl">
+    <div class="line"><i></i><i class="end"></i></div>
+    <div class="mid">17 ay rafta</div>
+    <div class="node" style="left:-60px">
+      <div class="em">__EMBER_SLEEPY__</div>
+      <div class="d">Mayıs 2025</div>
+      <div class="t">İlk sürüm<br>JavaFX · tek dosya</div>
+    </div>
+    <div class="node" style="right:-60px">
+      <div class="em">__EMBER_HAPPY__</div>
+      <div class="d">Ekim 2026</div>
+      <div class="t">Emberwise<br>Windows & Mac</div>
+    </div>
+  </div>
+  <div class="foot"><div class="brand">__LOGO__ Emberwise</div><div class="page">3 / 8</div></div>
+</section>
+
+<!-- 4 · quests -->
+<section class="slide s4 glow">
+  <div class="pad">
+    <span class="pill">Görevler · XP · Rütbe</span>
+    <h2>Görev ekle, bitir,<br>seviye atla.</h2>
+    <p class="lead">Her görevin bir <b>amacı</b> var. <b>"Matematik çalış 14:30"</b> yazınca hatırlatıcı kendiliğinden kuruluyor. Bitirdikçe XP ve altın kazanıp rütbe atlıyorsun.</p>
+  </div>
+  <div class="shot" style="left:84px;right:-210px;top:570px;"><img src="out/shots/today.png"></div>
+  <div class="fade"></div>
+  <div class="foot"><div class="brand">__LOGO__ Emberwise</div><div class="page">4 / 8</div></div>
+</section>
+
+<!-- 5 · focus -->
+<section class="slide s5 dark glow">
+  <div class="pad">
+    <span class="pill">Odak ateşi</span>
+    <h2>Sen odaklandıkça<br>kor ruhu büyüyor.</h2>
+    <p class="lead">Pomodoro zamanlayıcısı. Yağmur, şömine, dalga sesleri internetten gelmiyor; uygulamanın içinde <b>anlık üretiliyor</b>. Kalan süre görev çubuğunda da görünüyor.</p>
+  </div>
+  <div class="shot" style="left:84px;right:-210px;top:570px;"><img src="out/shots/focus.png"></div>
+  <div class="fade"></div>
+  <div class="foot"><div class="brand">__LOGO__ Emberwise</div><div class="page">5 / 8</div></div>
+</section>
+
+<!-- 6 · hero & shop -->
+<section class="slide s6 glow">
+  <div class="pad">
+    <span class="pill">Kahraman · Dükkân</span>
+    <h2>Kahramanını<br>sen tasarla.</h2>
+    <p class="lead">Kadın ya da erkek, saç, ten ve sınıf seç. Odaklanarak kazandığın altınla şapka, yoldaş ve diyar al.</p>
+  </div>
+  <div class="shot" style="left:300px;right:-300px;top:560px;transform:rotate(2.5deg)"><img src="out/shots/shop.png"></div>
+  <div class="shot" style="left:40px;right:140px;top:860px;transform:rotate(-2deg)"><img src="out/shots/hero.png"></div>
+  <div class="fade"></div>
+  <div class="foot"><div class="brand">__LOGO__ Emberwise</div><div class="page">6 / 8</div></div>
+</section>
+
+<!-- 7 · features -->
+<section class="slide s7 glow">
+  <div class="pad">
+    <span class="pill">Ve daha fazlası</span>
+    <h2>Küçük ama<br>eksiksiz.</h2>
+  </div>
+  <div class="grid">
+    <div class="tile"><div class="ic" style="background:#fde8dc;color:#ee6c3a">__I_SHIELD__</div><div><strong>İnternetsiz</strong><span>Hesap yok, reklam yok. Veriler senin bilgisayarında.</span></div></div>
+    <div class="tile"><div class="ic" style="background:#e3ecf8;color:#3a7fc4">__I_GLOBE__</div><div><strong>Türkçe & English</strong><span>Dil, bilgisayarına göre kendiliğinden seçilir.</span></div></div>
+    <div class="tile"><div class="ic" style="background:#eee4f8;color:#8a5cc4">__I_MOON__</div><div><strong>Aydınlık & koyu</strong><span>Sisteme göre tema ve 6 vurgu rengi.</span></div></div>
+    <div class="tile"><div class="ic" style="background:#fbefd3;color:#d99a25">__I_CHEST__</div><div><strong>Günlük görevler</strong><span>Günün sandığı, seri ve seriyi koruyan kalkan.</span></div></div>
+    <div class="tile"><div class="ic" style="background:#e0f2e8;color:#3e9b6e">__I_TROPHY__</div><div><strong>24 başarım</strong><span>İstatistikler, etkinlik haritası, macera günlüğü.</span></div></div>
+    <div class="tile"><div class="ic" style="background:#f4ece0;color:#574d63">__I_MONITOR__</div><div><strong>Windows & Mac</strong><span>Apple Silicon (M1–M5) ve Intel desteği.</span></div></div>
+  </div>
+  <div class="ranks"><img src="__RANKS__"></div>
+  <div class="foot"><div class="brand">__LOGO__ Emberwise</div><div class="page">7 / 8</div></div>
+</section>
+
+<!-- 8 · how -->
+<section class="slide s8 dark glow">
+  <div class="pad">
+    <span class="pill">Nasıl yaptım?</span>
+    <h2>Altında ne var?</h2>
+    <div class="chips"><span class="chip">Electron</span><span class="chip">Svelte 5</span><span class="chip">TypeScript</span><span class="chip">Vite</span><span class="chip">Web Audio</span></div>
+    <ul class="list">
+      <li><i>✓</i>İkonlar, karakterler ve maskot elle çizilmiş SVG</li>
+      <li><i>✓</i>Ortam sesleri ve efektler kodla anlık sentezleniyor</li>
+      <li><i>✓</i>Birim testleri ve gerçek pencerede uçtan uca test</li>
+      <li><i>✓</i>Windows ve macOS kurulumlarını GitHub Actions derliyor</li>
+    </ul>
+  </div>
+  <div class="cta">
+    <div><strong>Ücretsiz indir</strong><span>github.com/anilg12/Emberwise</span></div>
+    <div class="plat">Windows 10 / 11<br>macOS · M1–M5 & Intel</div>
+  </div>
+  <div class="sig">
+    <div class="cap">TASARLAYAN VE GELİŞTİREN</div>
+    <div class="name">Anıl Gül</div>
+    <svg width="330" height="34" viewBox="0 0 330 34"><path d="M10 20 C80 8 170 4 250 12 C275 15 295 20 318 9" fill="none" stroke="#ee6c3a" stroke-width="5" stroke-linecap="round"/></svg>
+  </div>
+  <div class="foot"><div class="brand">__LOGO__ Emberwise</div><div class="page">8 / 8</div></div>
+</section>
+
+</body>
+</html>

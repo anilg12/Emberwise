@@ -10,3 +10,5 @@ Thumbs.db
 .claude/
 build/icon-preview.png
 publish-log.txt
+promo/out/
+promo/slides.built.html
