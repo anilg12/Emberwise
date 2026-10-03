@@ -19,6 +19,7 @@ interface EmberBridge {
   save(text: string): Promise<boolean>;
   saveSync(text: string): boolean;
   info(): Promise<EmberAppInfo>;
+  readSound(name: string): Promise<Uint8Array | null>;
   notify(payload: { title: string; body: string; silent?: boolean; route?: string }): void;
   setTheme(payload: { mode: string; dark: boolean; bg?: string; symbol?: string }): void;
   setProgress(value: number): void;

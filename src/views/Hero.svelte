@@ -2,7 +2,8 @@
   import { store } from '../lib/state.svelte';
   import { t, itemName } from '../lib/i18n.svelte';
   import { RANKS, nextRank } from '../lib/game';
-  import { SHOP } from '../lib/catalog';
+  import { SHOP, shopItem } from '../lib/catalog';
+  import { CHARACTERS, character } from '../lib/characters';
   import { achievementContext } from '../lib/catalog';
   import { rise } from '../lib/motion';
   import type { Body, HeroClass, Equipped } from '../lib/types';
@@ -19,7 +20,7 @@
 
   const SKINS = ['#ffe3cc', '#f6cfab', '#e3ad83', '#c78c60', '#9c6541', '#6f462b'];
   const HAIRS = ['#2c2226', '#5b3a29', '#9a5631', '#dcae62', '#c9503c', '#8f8aa6', '#efe3cb', '#3f5f8f'];
-  const CLASSES: HeroClass[] = ['wizard', 'knight', 'ranger', 'bard'];
+  const TIERS = ['free', 'shop', 'login'] as const;
 
   const look = $derived(store.data.profile.look);
   const next = $derived(nextRank(store.lvl.level));
@@ -51,6 +52,14 @@
   function owned(slot: keyof Equipped) {
     return SHOP.filter((i) => i.slot === slot && store.data.owned.includes(i.id));
   }
+
+  function pickCharacter(id: HeroClass) {
+    if (store.hasCharacter(id)) {
+      if (look.heroClass !== id) store.setCharacter(id, 0);
+    } else store.navigate(character(id).tier === 'login' ? 'rewards' : 'shop');
+  }
+
+  const tones = $derived(character(look.heroClass).tones);
 </script>
 
 <div class="page">
@@ -71,6 +80,7 @@
               {look}
               hat={store.data.equipped.hat}
               pet={store.data.equipped.pet}
+              acc={store.data.equipped.acc}
               level={store.lvl.level}
               size={230}
             />
@@ -178,13 +188,55 @@
             </div>
             <div class="field">
               <span class="label">{t('hero.heroClass')}</span>
-              <div class="classes">
-                {#each CLASSES as c}
-                  <button class="cls" class:on={look.heroClass === c} onclick={() => setLook('heroClass', c)}>
-                    <span class="cls-art"><Avatar look={{ ...look, heroClass: c }} size={58} animate={false} decorations={false} /></span>
-                    <strong>{t(`hero.classes.${c}`)}</strong>
-                    <span>{t(`hero.classDesc.${c}`)}</span>
-                  </button>
+              {#each TIERS as tier}
+                <p class="tier">{t(`hero.tiers.${tier}`)}</p>
+                <div class="chars">
+                  {#each CHARACTERS.filter((c) => c.tier === tier) as c (c.id)}
+                    {@const has = store.hasCharacter(c.id)}
+                    {@const price = shopItem(`char_${c.id}`)}
+                    <button
+                      class="char"
+                      class:on={look.heroClass === c.id}
+                      class:locked={!has}
+                      onclick={() => pickCharacter(c.id)}
+                      title={t(`hero.classDesc.${c.id}`)}
+                    >
+                      <span class="char-art">
+                        <Avatar
+                          look={{ ...look, heroClass: c.id, tone: look.heroClass === c.id ? look.tone : 0 }}
+                          size={70}
+                          crop="figure"
+                          animate={false}
+                          decorations={false}
+                        />
+                      </span>
+                      <span class="char-name">{t(`hero.classes.${c.id}`)}</span>
+                      {#if !has}
+                        <span class="char-lock">
+                          {#if c.tier === 'login'}
+                            <Icon name="gift" size={12} />{t('rewards.day', { n: price?.login ?? 0 })}
+                          {:else}
+                            <Icon name="coin" size={12} />{price?.price}
+                          {/if}
+                        </span>
+                      {/if}
+                    </button>
+                  {/each}
+                </div>
+              {/each}
+              <p class="char-desc"><b>{t(`hero.classes.${look.heroClass}`)}</b> · {t(`hero.classDesc.${look.heroClass}`)}</p>
+            </div>
+            <div class="field">
+              <span class="label">{t('hero.tone')}</span>
+              <div class="tones">
+                {#each tones as tone, i}
+                  <button
+                    class="tone"
+                    class:on={(look.tone ?? 0) === i}
+                    style="--a:{tone.main};--b:{tone.alt === tone.main ? tone.dark : tone.alt};--c:{tone.trim}"
+                    onclick={() => setLook('tone', i)}
+                    aria-label="{t('hero.tone')} {i + 1}"
+                  ></button>
                 {/each}
               </div>
             </div>
@@ -196,7 +248,7 @@
                 <button class="btn soft" onclick={() => store.navigate('shop')}><Icon name="bag" size={16} />{t('hero.goShop')}</button>
               </div>
             {:else}
-              {#each ['hat', 'pet', 'bg'] as const as slot}
+              {#each ['hat', 'acc', 'pet', 'bg'] as const as slot}
                 <div class="field">
                   <span class="label">{t(`hero.slots.${slot}`)}</span>
                   <div class="items">
@@ -208,6 +260,7 @@
                       <button class="item" class:on={store.data.equipped[slot] === it.id} onclick={() => store.equip(slot, it.id)}>
                         <ItemThumb id={it.id} size={74} />
                         <span class="iname">{itemName(it.id)}</span>
+                        {#if it.login}<span class="excl" title={t('common.exclusive')}><Icon name="spark" size={11} /></span>{/if}
                         {#if store.data.equipped[slot] === it.id}<span class="tick"><Icon name="check" size={12} stroke={3} /></span>{/if}
                       </button>
                     {/each}
@@ -405,51 +458,116 @@
   .hair.on {
     border-color: var(--accent);
   }
-  .classes {
+  .tier {
+    margin: 2px 0 8px;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .tier:not(:first-of-type) {
+    margin-top: 14px;
+  }
+  .chars {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
     gap: 8px;
   }
-  .cls {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto auto;
-    column-gap: 10px;
+  .char {
+    position: relative;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: 8px 12px 8px 8px;
+    gap: 4px;
+    padding: 6px 4px 8px;
     border-radius: 14px;
     border: 1.5px solid var(--line);
     background: var(--surface-2);
-    text-align: left;
-    transition: border-color 0.2s, background-color 0.2s;
+    transition:
+      border-color 0.2s,
+      background-color 0.2s,
+      transform 0.25s var(--ease-spring);
   }
-  .cls:hover {
+  .char:hover {
+    transform: translateY(-2px);
     border-color: var(--line-2);
   }
-  .cls.on {
+  .char.on {
     border-color: var(--accent);
     background: var(--accent-softer);
   }
-  .cls-art {
-    grid-row: span 2;
-    width: 58px;
-    height: 66px;
-    border-radius: 12px;
+  .char-art {
+    width: 100%;
+    height: 82px;
+    border-radius: 10px;
     background: var(--stage);
     display: grid;
     place-items: end center;
     overflow: hidden;
   }
-  .cls strong {
-    font-weight: 800;
-    font-size: 14px;
-    align-self: end;
+  .char.locked .char-art :global(svg) {
+    filter: grayscale(0.85) opacity(0.55);
   }
-  .cls span:last-child {
+  .char-name {
     font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.15;
+  }
+  .char-lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10.5px;
+    font-weight: 800;
     color: var(--ink-3);
-    line-height: 1.3;
-    align-self: start;
+  }
+  .char-desc {
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .char-desc b {
+    color: var(--ink);
+  }
+  .tones {
+    display: flex;
+    gap: 10px;
+  }
+  .tone {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--a) 0 55%, var(--b) 55% 100%);
+    box-shadow:
+      inset 0 0 0 1px var(--swatch-ring),
+      inset -5px -5px 0 -2px var(--c);
+    transition:
+      transform 0.2s var(--ease-spring),
+      box-shadow 0.2s;
+  }
+  .tone:hover {
+    transform: scale(1.08);
+  }
+  .tone.on {
+    box-shadow:
+      inset 0 0 0 1px var(--swatch-ring),
+      inset -5px -5px 0 -2px var(--c),
+      0 0 0 3px var(--surface),
+      0 0 0 5px var(--accent);
+  }
+  .excl {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffd27a, #f4743b);
+    color: #fff;
   }
   .items {
     display: grid;

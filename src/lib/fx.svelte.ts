@@ -27,12 +27,21 @@ export interface Celebration {
   rankChanged: boolean;
 }
 
+export interface Whisper {
+  id: number;
+  text: string;
+  quoteId: string;
+  mood: 'happy' | 'calm' | 'wow' | 'sleepy';
+}
+
 let seq = 1;
 
 class Fx {
   toasts = $state<Toast[]>([]);
   floaters = $state<Floater[]>([]);
   celebrations = $state<Celebration[]>([]);
+  whisper = $state<Whisper | null>(null);
+  private whisperTimer: ReturnType<typeof setTimeout> | null = null;
   /** Last pointer position, used to anchor floaters to where the user clicked. */
   pointer = { x: 0, y: 0 };
 
@@ -69,6 +78,24 @@ class Fx {
 
   closeCelebration() {
     this.celebrations = [];
+  }
+
+  /** A short line from the ember spirit, shown in a corner bubble. */
+  say(text: string, quoteId: string, mood: Whisper['mood'] = 'happy', duration = 7000) {
+    this.whisper = { id: seq++, text, quoteId, mood };
+    if (this.whisperTimer) clearTimeout(this.whisperTimer);
+    this.whisperTimer = setTimeout(() => (this.whisper = null), duration);
+  }
+
+  hush() {
+    if (this.whisperTimer) clearTimeout(this.whisperTimer);
+    this.whisper = null;
+  }
+
+  /** Keeps a whisper on screen while the pointer rests on it. */
+  hold(on: boolean) {
+    if (this.whisperTimer) clearTimeout(this.whisperTimer);
+    if (!on && this.whisper) this.whisperTimer = setTimeout(() => (this.whisper = null), 3500);
   }
 }
 

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { store } from '../lib/state.svelte';
   import { t, itemName, itemDesc, fmtNumber } from '../lib/i18n.svelte';
-  import { SHOP, MAX_SHIELDS, shopItem, type Slot } from '../lib/catalog';
+  import { FOR_SALE, MAX_SHIELDS, shopItem, type Slot, type WearSlot } from '../lib/catalog';
+  import type { HeroClass } from '../lib/types';
   import { buyItem } from '../lib/actions';
   import { rise } from '../lib/motion';
   import Icon from '../components/Icon.svelte';
@@ -10,16 +11,31 @@
   import Avatar from '../components/Avatar.svelte';
   import Scene from '../components/Scene.svelte';
 
-  let tab = $state<Slot>('hat');
+  let tab = $state<Slot>('char');
   let confirming = $state<string | null>(null);
   let preview = $state<string | null>(null);
   let confirmTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const items = $derived(SHOP.filter((i) => i.slot === tab));
+  const items = $derived(FOR_SALE.filter((i) => i.slot === tab));
   const previewItem = $derived(shopItem(preview));
   const pHat = $derived(previewItem?.slot === 'hat' ? previewItem.id : store.data.equipped.hat);
   const pPet = $derived(previewItem?.slot === 'pet' ? previewItem.id : store.data.equipped.pet);
   const pBg = $derived(previewItem?.slot === 'bg' ? previewItem.id : store.data.equipped.bg);
+  const pAcc = $derived(previewItem?.slot === 'acc' ? previewItem.id : store.data.equipped.acc);
+  const pLook = $derived(
+    previewItem?.slot === 'char' ? { ...store.data.profile.look, heroClass: previewItem.id.slice(5) as HeroClass, tone: 0 } : store.data.profile.look,
+  );
+
+  function isWorn(id: string, slot: Slot) {
+    if (slot === 'char') return store.data.profile.look.heroClass === id.slice(5);
+    if (slot === 'consumable') return false;
+    return store.data.equipped[slot] === id;
+  }
+
+  function wear(id: string, slot: Slot, on: boolean) {
+    if (slot === 'char') store.setCharacter((on ? id.slice(5) : 'wizard') as HeroClass);
+    else if (slot !== 'consumable') store.equip(slot as WearSlot, on ? id : null);
+  }
 
   function onBuy(id: string, el: HTMLElement) {
     const state = store.canBuy(id);
@@ -55,7 +71,7 @@
       <div class="stage">
         <Scene id={pBg} />
         <div class="figure">
-          <Avatar look={store.data.profile.look} hat={pHat} pet={pPet} level={store.lvl.level} size={190} />
+          <Avatar look={pLook} hat={pHat} pet={pPet} acc={pAcc} level={store.lvl.level} size={190} />
         </div>
       </div>
       <p class="p-label">
@@ -70,7 +86,9 @@
     <section in:rise={{ delay: 70 }}>
       <Segmented
         options={[
+          { value: 'char', label: t('shop.tabs.char') },
           { value: 'hat', label: t('shop.tabs.hat') },
+          { value: 'acc', label: t('shop.tabs.acc') },
           { value: 'pet', label: t('shop.tabs.pet') },
           { value: 'bg', label: t('shop.tabs.bg') },
           { value: 'consumable', label: t('shop.tabs.consumable') },
@@ -88,7 +106,7 @@
           {#each items as it (it.id)}
             {@const state = store.canBuy(it.id)}
             {@const isOwned = it.slot !== 'consumable' && store.data.owned.includes(it.id)}
-            {@const equipped = it.slot !== 'consumable' && store.data.equipped[it.slot] === it.id}
+            {@const equipped = isWorn(it.id, it.slot)}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <article
               class="item card"
@@ -112,9 +130,11 @@
                 {#if isOwned}
                   <span class="owned-label"><Icon name="check" size={14} />{t('shop.owned')}</span>
                   {#if !equipped}
-                    <button class="btn sm soft" onclick={() => store.equip(it.slot as 'hat' | 'pet' | 'bg', it.id)}>{t('shop.equip')}</button>
+                    <button class="btn sm soft" onclick={() => wear(it.id, it.slot, true)}>{it.slot === 'char' ? t('shop.wear') : t('shop.equip')}</button>
+                  {:else if it.slot === 'char'}
+                    <span class="wearing">{t('shop.wearing')}</span>
                   {:else}
-                    <button class="btn sm ghost" onclick={() => store.equip(it.slot as 'hat' | 'pet' | 'bg', null)}>{t('hero.unequip')}</button>
+                    <button class="btn sm ghost" onclick={() => wear(it.id, it.slot, false)}>{t('hero.unequip')}</button>
                   {/if}
                 {:else}
                   <span class="price" class:short={state === 'gold'}><Icon name="coin" size={15} /><b class="num">{it.price}</b></span>
@@ -145,6 +165,7 @@
           {/each}
         </div>
       {/key}
+      <p class="exclusive-note"><Icon name="gift" size={15} />{t('shop.exclusiveHint')} <button class="link" onclick={() => store.navigate('rewards')}>{t('rewards.seeAll')}</button></p>
     </section>
   </div>
 </div>
@@ -330,6 +351,31 @@
   }
   .btn:disabled {
     font-size: 12px;
+  }
+  .wearing {
+    margin-left: auto;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--accent-text);
+  }
+  .exclusive-note {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-3);
+  }
+  .exclusive-note :global(svg) {
+    color: var(--accent);
+  }
+  .link {
+    color: var(--accent-text);
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
   @media (max-width: 1000px) {
     .layout {

@@ -4,13 +4,18 @@
   import Avatar from './Avatar.svelte';
   import PetArt from './PetArt.svelte';
   import Scene from './Scene.svelte';
+  import type { HeroClass } from '../lib/types';
 
   let { id, size = 96 }: { id: string; size?: number } = $props();
   const item = $derived(shopItem(id));
 </script>
 
 <div class="thumb {item?.slot}" style="--s:{size}px">
-  {#if item?.slot === 'hat'}
+  {#if item?.slot === 'char'}
+    <span class="char"><Avatar look={{ ...store.data.profile.look, heroClass: id.slice(5) as HeroClass, tone: 0 }} level={1} size={size * 0.82} crop="figure" animate={false} decorations={false} /></span>
+  {:else if item?.slot === 'acc'}
+    <Avatar look={store.data.profile.look} acc={id} level={1} size={size * 0.95} crop={['acc_backpack', 'acc_bowtie', 'acc_ember_pin'].includes(id) ? 'bust' : 'head'} animate={false} decorations={false} />
+  {:else if item?.slot === 'hat'}
     <Avatar look={store.data.profile.look} hat={id} level={1} size={size} crop="hat" animate={false} decorations={false} />
   {:else if item?.slot === 'pet'}
     <svg width={size * 0.78} height={size * 0.78} viewBox="-4 -6 58 62" aria-hidden="true"><PetArt {id} /></svg>
@@ -41,5 +46,9 @@
   }
   .thumb.hat :global(svg) {
     margin-top: 4px;
+  }
+  .char {
+    align-self: end;
+    display: grid;
   }
 </style>

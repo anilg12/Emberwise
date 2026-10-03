@@ -1,11 +1,12 @@
 <script lang="ts">
   import { store, categoryName, categoryColor } from '../lib/state.svelte';
-  import { t, fmtDate, fmtNumber, fmtDuration, fmtTime, tv } from '../lib/i18n.svelte';
+  import { t, fmtDate, fmtNumber, fmtDuration, fmtTime, tv, itemName } from '../lib/i18n.svelte';
   import { addDays, dayKeyOfIso, parseDayKey, weekday } from '../lib/dates';
   import { rise } from '../lib/motion';
   import type { LogEntry } from '../lib/types';
   import Icon from '../components/Icon.svelte';
   import Segmented from '../components/Segmented.svelte';
+  import MoodFace from '../components/MoodFace.svelte';
 
   let range = $state<7 | 30>(7);
   let showTable = $state(false);
@@ -153,12 +154,35 @@
     achievement: 'trophy',
     streak: 'spark',
     purchase: 'bag',
+    login: 'gift',
+    journal: 'heart',
   };
+
+  /* ---------- mood ---------- */
+  const moodDays = $derived.by(() => {
+    const out: { key: string; mood: number; note: string }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const key = addDays(today, -i);
+      const e = store.data.journal[key];
+      out.push({ key, mood: e?.mood ?? 0, note: e?.note ?? '' });
+    }
+    return out;
+  });
+  const moodLabels = $derived(tv<string[]>('today.moods'));
+  const hasMood = $derived(moodDays.some((m) => m.mood));
   const recent = $derived(store.data.log.slice(-40).reverse());
 
   function logLabel(e: LogEntry): string {
     if (e.kind === 'quest') return t(`quests.items.${e.label}`);
     if (e.kind === 'achievement') return t(`awards.items.${e.label}.0`);
+    if (e.kind === 'login') {
+      if (e.label === 'gift') return t('rewards.giftTitle');
+      if (e.label === 'week') return t('rewards.weekTitle');
+      if (e.label === 'month') return t('rewards.monthTitle');
+      if (e.label && e.label !== 'path') return itemName(e.label);
+      return t('rewards.pathTitle');
+    }
+    if (e.kind === 'journal') return t('stats.kinds.journal');
     return e.label || t(`stats.kinds.${e.kind}`);
   }
 
@@ -350,6 +374,28 @@
           {#each [0, 1, 2, 3, 4] as l}<span class="cell l{l}"></span>{/each}
           <span>{t('stats.more')}</span>
         </div>
+      </div>
+    </section>
+
+    <section class="card mood-card" in:rise={{ delay: 135 }}>
+      <div class="section-title">
+        <h2>{t('stats.mood')}</h2>
+        <span class="hint">{t('stats.moodHint')}</span>
+      </div>
+      {#if !hasMood}
+        <p class="muted empty-line">{t('stats.moodEmpty')}</p>
+      {/if}
+      <div class="moods">
+        {#each moodDays as m (m.key)}
+          <div class="m-day" title="{fmtDate(parseDayKey(m.key), { day: 'numeric', month: 'long' })}{m.mood ? ` · ${moodLabels[m.mood - 1]}` : ''}{m.note ? ` · ${m.note}` : ''}">
+            {#if m.mood}
+              <MoodFace mood={m.mood} size={24} />
+            {:else}
+              <span class="m-empty"></span>
+            {/if}
+            <span class="m-n" class:today={m.key === today}>{Number(m.key.slice(8))}</span>
+          </div>
+        {/each}
       </div>
     </section>
 
@@ -690,6 +736,36 @@
   }
   .log-card {
     grid-column: 1 / -1;
+  }
+  .mood-card {
+    grid-column: 1 / -1;
+  }
+  .moods {
+    display: grid;
+    grid-template-columns: repeat(30, minmax(0, 1fr));
+    gap: 2px;
+  }
+  .m-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .m-empty {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--line-2);
+    transform: scale(0.55);
+  }
+  .m-n {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--ink-4);
+    font-variant-numeric: tabular-nums;
+  }
+  .m-n.today {
+    color: var(--accent-text);
   }
   .log {
     list-style: none;

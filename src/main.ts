@@ -9,6 +9,14 @@ import './app.css';
 import { mount } from 'svelte';
 import App from './App.svelte';
 
-const app = mount(App, { target: document.getElementById('app')! });
+async function start() {
+  if (import.meta.env.DEV && location.hash === '#gallery') {
+    const { default: Gallery } = await import('./dev/Gallery.svelte');
+    return mount(Gallery, { target: document.getElementById('app')! });
+  }
+  return mount(App, { target: document.getElementById('app')! });
+}
+
+const app = start();
 
 export default app;

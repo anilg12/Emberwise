@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('ember', {
   save: (text) => ipcRenderer.invoke('store:save', text),
   saveSync: (text) => ipcRenderer.sendSync('store:saveSync', text),
   info: () => ipcRenderer.invoke('app:info'),
+  readSound: (name) => ipcRenderer.invoke('asset:sound', name),
   notify: (payload) => ipcRenderer.send('notify', payload),
   setTheme: (payload) => ipcRenderer.send('theme:set', payload),
   setProgress: (value) => ipcRenderer.send('progress:set', value),

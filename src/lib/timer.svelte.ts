@@ -8,6 +8,7 @@ import { t } from './i18n.svelte';
 import { notify, pinWindow, setProgress, updateTray } from './platform';
 import { formatClock } from './dates';
 import { burst } from './confetti';
+import { pickQuote } from './motivation';
 import type { PersistedTimer } from './types';
 
 export type Phase = 'focus' | 'short' | 'long';
@@ -237,6 +238,10 @@ class FocusTimer {
       } else {
         fx.toast({ kind: 'success', icon: 'flame', title: t('focus.completeTitle'), body: t('focus.completeBody', reward), duration: 6000 });
         if (!store.reducedMotion && !document.hidden) burst({ count: 70 });
+        if (s.motivation && !fx.whisper) {
+          const q = pickQuote('focus', store.data.profile.name);
+          fx.say(q.text, q.id, 'wow');
+        }
       }
       if (s.notifications && !away) notify(t('focus.completeTitle'), t('focus.completeBody', reward), 'focus');
     } else {

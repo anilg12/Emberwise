@@ -59,6 +59,20 @@ export async function appInfo(): Promise<EmberAppInfo> {
   };
 }
 
+/** Raw bytes of a bundled ambience loop (public/ambience/<name>.ogg). */
+export async function readSound(name: string): Promise<ArrayBuffer | null> {
+  if (bridge && location.protocol === 'file:') {
+    const bytes = await bridge.readSound(name);
+    return bytes ? (bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer) : null;
+  }
+  try {
+    const r = await fetch(`ambience/${name}.ogg`);
+    return r.ok ? await r.arrayBuffer() : null;
+  } catch {
+    return null;
+  }
+}
+
 export function notify(title: string, body: string, route?: string) {
   if (bridge) {
     bridge.notify({ title, body, route, silent: true });

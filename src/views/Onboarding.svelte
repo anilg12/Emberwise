@@ -9,10 +9,10 @@
   import type { Body, HeroClass, Settings } from '../lib/types';
   import Ember from '../components/Ember.svelte';
   import Avatar from '../components/Avatar.svelte';
+  import { CHARACTERS } from '../lib/characters';
   import Scene from '../components/Scene.svelte';
   import Segmented from '../components/Segmented.svelte';
   import Icon from '../components/Icon.svelte';
-  import Signature from '../components/Signature.svelte';
 
   let step = $state(0);
   let dir = $state(1);
@@ -22,7 +22,7 @@
 
   const SKINS = ['#ffe3cc', '#f6cfab', '#e3ad83', '#c78c60', '#9c6541', '#6f462b'];
   const HAIRS = ['#2c2226', '#5b3a29', '#9a5631', '#dcae62', '#c9503c', '#8f8aa6', '#efe3cb', '#3f5f8f'];
-  const CLASSES: HeroClass[] = ['wizard', 'knight', 'ranger', 'bard'];
+  const CLASSES = CHARACTERS.filter((c) => c.tier === 'free').map((c) => c.id);
   const look = $derived(store.data.profile.look);
 
   function slide(_n: Element, { d = 1 } = {}) {
@@ -60,6 +60,7 @@
 
   function finish() {
     store.data.onboarded = true;
+    store.touchLogin();
     if (store.data.tasks.length === 0) {
       store.createTask({
         title: t('onboarding.sampleTask'),
@@ -210,13 +211,14 @@
                 </div>
                 <div class="field">
                   <span class="label">{t('hero.heroClass')}</span>
-                  <Segmented
-                    full
-                    size="sm"
-                    options={CLASSES.map((c) => ({ value: c, label: t(`hero.classes.${c}`) }))}
-                    value={look.heroClass}
-                    onchange={(v) => setLook('heroClass', v as HeroClass)}
-                  />
+                  <div class="chars">
+                    {#each CLASSES as c (c)}
+                      <button class="char" class:on={look.heroClass === c} onclick={() => setLook('heroClass', c as HeroClass)} title={t(`hero.classDesc.${c}`)}>
+                        <span class="char-art"><Avatar look={{ ...look, heroClass: c, tone: 0 }} size={54} crop="figure" animate={false} decorations={false} /></span>
+                        <span class="char-name">{t(`hero.classes.${c}`)}</span>
+                      </button>
+                    {/each}
+                  </div>
                 </div>
               </div>
             </div>
@@ -235,6 +237,10 @@
                 <li style="--c:#e0912b">
                   <span class="h-icon"><Icon name="crown" size={22} /></span>
                   <p>{t('onboarding.how3')}</p>
+                </li>
+                <li style="--c:#c4477a">
+                  <span class="h-icon"><Icon name="gift" size={22} /></span>
+                  <p>{t('onboarding.how4')}</p>
                 </li>
               </ul>
               <div class="hero-row">
@@ -263,7 +269,6 @@
     </div>
   </div>
 
-  <div class="foot"><Signature size={30} caption={t('settings.crafted')} /></div>
 </div>
 
 <style>
@@ -560,8 +565,45 @@
     align-items: center;
     margin-top: 12px;
   }
-  .foot {
-    position: relative;
-    opacity: 0.9;
+  .chars {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .char {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 2px 6px;
+    border-radius: 12px;
+    border: 1.5px solid var(--line);
+    background: var(--surface-2);
+    transition:
+      border-color 0.2s,
+      background-color 0.2s,
+      transform 0.25s var(--ease-spring);
+  }
+  .char:hover {
+    transform: translateY(-2px);
+  }
+  .char.on {
+    border-color: var(--accent);
+    background: var(--accent-softer);
+  }
+  .char-art {
+    width: 100%;
+    height: 64px;
+    border-radius: 9px;
+    background: var(--stage);
+    display: grid;
+    place-items: end center;
+    overflow: hidden;
+  }
+  .char-name {
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: center;
   }
 </style>

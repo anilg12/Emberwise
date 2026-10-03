@@ -15,6 +15,7 @@
     { id: 'focus', icon: 'flame' },
     { id: 'hero', icon: 'hero' },
     { id: 'shop', icon: 'bag' },
+    { id: 'rewards', icon: 'gift' },
     { id: 'awards', icon: 'trophy' },
     { id: 'stats', icon: 'chart' },
   ];
@@ -55,6 +56,8 @@
           <span class="pill">{openTasks}</span>
         {:else if item.id === 'today' && store.chestState === 'ready'}
           <span class="dot" title={t('quests.chestOpen')}></span>
+        {:else if item.id === 'rewards' && store.rewardsWaiting > 0}
+          <span class="pill gift" title={t('rewards.waiting', { n: store.rewardsWaiting })}>{store.rewardsWaiting}</span>
         {/if}
       </button>
     {/each}
@@ -65,7 +68,7 @@
   <button class="hero-card" onclick={() => store.navigate('hero')}>
     <div class="hero-row">
       <span class="face" style="--rank:{store.rank.color}">
-        <Avatar look={store.data.profile.look} hat={store.data.equipped.hat} level={store.lvl.level} size={44} crop="head" animate={false} decorations={false} />
+        <Avatar look={store.data.profile.look} hat={store.data.equipped.hat} acc={store.data.equipped.acc} level={store.lvl.level} size={44} crop="head" animate={false} decorations={false} />
       </span>
       <div class="who">
         <strong>{store.data.profile.name || '—'}</strong>
@@ -95,7 +98,14 @@
     >
       <Icon name="sliders" size={18} />
     </button>
-    <span class="sig" title="Anıl Gül">Anıl Gül</span>
+    <button
+      class="icon-btn info"
+      onclick={() => (store.aboutOpen = true)}
+      title={t('common.about')}
+      aria-label={t('common.about')}
+    >
+      <Icon name="info" size={18} />
+    </button>
   </div>
 </aside>
 
@@ -340,14 +350,21 @@
       opacity: 0;
     }
   }
-  .sig {
+  .info {
     margin-left: auto;
-    font-family: var(--font-hand);
-    font-weight: 700;
-    font-size: 19px;
-    color: var(--ink-3);
-    opacity: 0.85;
-    padding-right: 4px;
-    transform: rotate(-4deg);
+  }
+  .pill.gift {
+    background: var(--gold);
+    color: #3b2a12;
+    animation: glint 2.4s ease-in-out infinite;
+  }
+  @keyframes glint {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 var(--gold-soft);
+    }
+    50% {
+      box-shadow: 0 0 0 5px var(--gold-soft);
+    }
   }
 </style>

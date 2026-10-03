@@ -400,6 +400,17 @@ ipcMain.on('store:saveSync', (e, text) => {
   e.returnValue = saveData(text);
 });
 
+// Ambience loops ship inside dist/ambience. Only plain names are accepted, so nothing else on disk can be read.
+ipcMain.handle('asset:sound', async (_e, name) => {
+  if (typeof name !== 'string' || !/^[a-z]{2,16}$/.test(name)) return null;
+  try {
+    const buf = await fs.promises.readFile(path.join(__dirname, '..', 'dist', 'ambience', `${name}.ogg`));
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+  } catch {
+    return null;
+  }
+});
+
 ipcMain.handle('app:info', () => ({
   version: app.getVersion(),
   platform: process.platform,

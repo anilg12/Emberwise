@@ -1,13 +1,17 @@
 <script lang="ts">
   import type { Look } from '../lib/types';
   import { rankFor, rankIndex } from '../lib/game';
+  import { character, toneOf } from '../lib/characters';
   import PetArt from './PetArt.svelte';
   import HatArt from './HatArt.svelte';
+  import ClassArt from './ClassArt.svelte';
+  import AccessoryArt from './AccessoryArt.svelte';
 
   let {
     look,
     hat = null,
     pet = null,
+    acc = null,
     level = 1,
     size = 200,
     crop = 'full',
@@ -17,9 +21,10 @@
     look: Look;
     hat?: string | null;
     pet?: string | null;
+    acc?: string | null;
     level?: number;
     size?: number;
-    crop?: 'full' | 'head' | 'bust' | 'hat';
+    crop?: 'full' | 'head' | 'bust' | 'hat' | 'figure';
     animate?: boolean;
     decorations?: boolean;
   } = $props();
@@ -28,12 +33,6 @@
   const SKIN_SHADE = ['#f2c8a9', '#e6b48e', '#cd9368', '#ad744a', '#805131', '#58371f'];
   const HAIR = ['#2c2226', '#5b3a29', '#9a5631', '#dcae62', '#c9503c', '#8f8aa6', '#efe3cb', '#3f5f8f'];
   const HAIR_SHADE = ['#1a1316', '#43291c', '#7a4224', '#bf8f48', '#a63d2c', '#716c89', '#d4c3a2', '#2e4870'];
-  const CLASS = {
-    wizard: { main: '#5b4fa8', dark: '#433a86', trim: '#f2c45a' },
-    knight: { main: '#a7b2c4', dark: '#7c889c', trim: '#f0743e' },
-    ranger: { main: '#3f7f5b', dark: '#2f6347', trim: '#a87443' },
-    bard: { main: '#b6455a', dark: '#923547', trim: '#f2c45a' },
-  } as const;
 
   const uid = `av${Math.random().toString(36).slice(2, 8)}`;
 
@@ -41,15 +40,28 @@
   const skinShade = $derived(SKIN_SHADE[look.skin] ?? SKIN_SHADE[1]);
   const hairC = $derived(HAIR[look.hairColor] ?? HAIR[1]);
   const hairS = $derived(HAIR_SHADE[look.hairColor] ?? HAIR_SHADE[1]);
-  const cls = $derived(CLASS[look.heroClass] ?? CLASS.wizard);
+  const def = $derived(character(look.heroClass));
+  const cls = $derived(toneOf(look.heroClass, look.tone ?? 0));
   const rank = $derived(rankFor(level));
   const tier = $derived(decorations ? rankIndex(level) : 0);
+  // Some outfits already have something at the neck; the rank scarf would only crowd them.
+  const scarf = $derived(tier >= 1 && acc !== 'acc_bowtie' && !['chef', 'artist', 'frost', 'astronaut', 'coder'].includes(look.heroClass));
   const viewBox = $derived(
-    crop === 'head' ? '38 26 124 124' : crop === 'bust' ? '22 6 156 170' : crop === 'hat' ? '28 -8 144 144' : '0 0 200 220',
+    crop === 'head'
+      ? '38 26 124 124'
+      : crop === 'bust'
+        ? '22 6 156 170'
+        : crop === 'hat'
+          ? '28 -8 144 144'
+          : crop === 'figure'
+            ? '22 30 156 184'
+            : '0 0 200 220',
   );
-  const height = $derived(crop === 'full' ? size * 1.1 : crop === 'bust' ? (size * 170) / 156 : size);
+  const height = $derived(crop === 'full' ? size * 1.1 : crop === 'bust' ? (size * 170) / 156 : crop === 'figure' ? (size * 184) / 156 : size);
   // A hat hides the top of the hair; long hair stays visible at the back.
-  const hatCoversTop = $derived(hat === 'hat_beanie' || hat === 'hat_viking' || hat === 'hat_wizard');
+  const hatCoversTop = $derived(
+    ['hat_beanie', 'hat_viking', 'hat_wizard', 'hat_cap', 'hat_chef', 'hat_safari', 'hat_fedora', 'hat_tricorn', 'hat_straw', 'hat_beret'].includes(hat ?? ''),
+  );
 </script>
 
 <svg
@@ -91,6 +103,10 @@
       <path d="M78 146 C70 162 66 182 64 204 L72 205 C74 184 78 164 86 150 Z" fill="#000" opacity="0.12" />
     {/if}
 
+    <!-- outfit pieces behind the body (wings, hood, sword, backpack) -->
+    <ClassArt id={look.heroClass} c={cls} layer="back" {uid} />
+    {#if acc}<AccessoryArt id={acc} layer="back" />{/if}
+
     <!-- back hair -->
     {#if look.hair === 1}
       <path d="M53 92 C48 128 51 160 63 173 C76 180 124 180 137 173 C149 160 152 128 147 92 Z" fill={hairS} />
@@ -103,10 +119,10 @@
     {/if}
 
     <!-- legs & boots -->
-    <rect x="86" y="188" width="11" height="17" rx="4" fill="#3b3247" />
-    <rect x="103" y="188" width="11" height="17" rx="4" fill="#3b3247" />
-    <ellipse cx="91" cy="206" rx="9.5" ry="4.8" fill="#5b3d2e" />
-    <ellipse cx="109" cy="206" rx="9.5" ry="4.8" fill="#5b3d2e" />
+    <rect x="86" y="188" width="11" height="17" rx="4" fill={def.legs ?? '#3b3247'} />
+    <rect x="103" y="188" width="11" height="17" rx="4" fill={def.legs ?? '#3b3247'} />
+    <ellipse cx="91" cy="206" rx="9.5" ry="4.8" fill={def.boots ?? '#5b3d2e'} />
+    <ellipse cx="109" cy="206" rx="9.5" ry="4.8" fill={def.boots ?? '#5b3d2e'} />
 
     <!-- body -->
     <path
@@ -114,65 +130,25 @@
       fill={cls.main}
     />
     <path d="M68 197 C68 173 70 153 82 145 C78 160 77 178 80 199 Q73 198.5 68 197 Z" fill="#000" opacity="0.1" />
-
-    {#if look.heroClass === 'wizard'}
-      <path d="M100 150 V198" stroke={cls.trim} stroke-width="3" stroke-linecap="round" />
-      <path d="M89 142 L100 154 L111 142" fill="none" stroke={cls.trim} stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
-      <path d="M69 192 Q100 199 131 192" fill="none" stroke={cls.trim} stroke-width="3" stroke-linecap="round" />
-      <path d="M112 166 l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" fill={cls.trim} />
-    {:else if look.heroClass === 'knight'}
-      <path d="M84 150 Q100 146 116 150 L114 178 Q100 184 86 178 Z" fill="#c5cedb" />
-      <circle cx="100" cy="162" r="7" fill={cls.trim} />
-      <path d="M100 157.5 c2.4 2.6 3.6 4.4 3.6 6 a3.6 3.6 0 0 1-7.2 0 c0-1.6 1.4-3.4 3.6-6z" fill="#ffd28a" />
-      <rect x="70" y="180" width="60" height="7" rx="3.5" fill={cls.dark} />
-      <ellipse cx="80" cy="147" rx="11" ry="7" fill={cls.dark} />
-      <ellipse cx="120" cy="147" rx="11" ry="7" fill={cls.dark} />
-    {:else if look.heroClass === 'ranger'}
-      <path d="M81 147 C88 135 112 135 119 147 C112 153 88 153 81 147 Z" fill={cls.dark} />
-      <rect x="70" y="176" width="60" height="7" rx="3.5" fill={cls.trim} />
-      <rect x="95" y="175" width="10" height="9" rx="2" fill="#e8c36a" />
-      <path d="M86 154 L92 172 M114 154 L108 172" stroke={cls.dark} stroke-width="2.2" stroke-linecap="round" />
-    {:else}
-      <path d="M86 142 Q100 152 114 142 L112 148 Q100 156 88 148 Z" fill="#f4ede0" />
-      <circle cx="100" cy="160" r="2.6" fill={cls.trim} />
-      <circle cx="100" cy="170" r="2.6" fill={cls.trim} />
-      <circle cx="100" cy="180" r="2.6" fill={cls.trim} />
-      <path d="M69 190 Q100 197 131 190" fill="none" stroke={cls.trim} stroke-width="2.5" stroke-linecap="round" />
-    {/if}
+    <ClassArt id={look.heroClass} c={cls} layer="torso" {uid} />
 
     <!-- scarf (Diligent and above) -->
-    {#if tier >= 1}
+    {#if scarf}
       <path d="M80 142 C90 149 110 149 120 142 L121 149 C110 156 90 156 79 149 Z" fill={rank.color} />
       <path d="M108 151 L116 172 L107 169 L103 153 Z" fill={rank.color} />
       <path d="M108 151 L116 172 L112 171 Z" fill="#000" opacity="0.12" />
     {/if}
+    {#if acc}<AccessoryArt id={acc} layer="chest" />{/if}
 
     <!-- held item (behind the hands) -->
-    {#if look.heroClass === 'wizard'}
-      <path d="M66 122 L74 205" stroke="#8a5a3b" stroke-width="4.5" stroke-linecap="round" />
-      <circle class="orb-glow" cx="65.5" cy="116" r="12" fill="#ffb04a" opacity="0.25" />
-      <circle cx="65.5" cy="116" r="7.5" fill="url(#{uid}-orb)" />
-    {:else if look.heroClass === 'knight'}
-      <rect x="127" y="128" width="4.6" height="48" rx="2.3" fill="#e9eef5" stroke="#9aa6b8" stroke-width="1.2" />
-      <rect x="121" y="174" width="17" height="4.5" rx="2.2" fill={cls.trim} />
-      <path d="M54 160 h24 v12 c0 9-6 15-12 18 c-6-3-12-9-12-18 z" fill={cls.dark} stroke="#c5cedb" stroke-width="2" stroke-linejoin="round" />
-      <path d="M66 166 c2.6 2.8 4 4.8 4 6.6 a4 4 0 0 1-8 0 c0-1.8 1.5-3.8 4-6.6z" fill={cls.trim} />
-    {:else if look.heroClass === 'ranger'}
-      <path d="M137 130 Q156 168 135 206" fill="none" stroke="#8a5a3b" stroke-width="4" stroke-linecap="round" />
-      <path d="M137 130 L135 206" stroke="#efe6d2" stroke-width="1.2" />
-    {:else}
-      <path d="M58 168 L48 132" stroke="#7a4e32" stroke-width="5" stroke-linecap="round" />
-      <rect x="43" y="124" width="9" height="11" rx="2.5" fill="#5b3d2e" transform="rotate(-18 47.5 129.5)" />
-      <ellipse cx="62" cy="180" rx="13" ry="15.5" fill="#c8894b" />
-      <ellipse cx="62" cy="180" rx="13" ry="15.5" fill="none" stroke="#8a5a3b" stroke-width="2" />
-      <circle cx="61" cy="176" r="4" fill="#5b3d2e" />
-    {/if}
+    <ClassArt id={look.heroClass} c={cls} layer="held" {uid} />
 
     <!-- arms & hands -->
-    <path d="M81 150 Q72 165 71 181" fill="none" stroke={cls.dark} stroke-width="13" stroke-linecap="round" />
-    <path d="M119 150 Q128 165 129 181" fill="none" stroke={cls.dark} stroke-width="13" stroke-linecap="round" />
-    <circle cx="71" cy="185" r="6.6" fill={skin} />
-    <circle cx="129" cy="185" r="6.6" fill={skin} />
+    <path d="M81 150 Q72 165 71 181" fill="none" stroke={cls.sleeve ?? cls.dark} stroke-width="13" stroke-linecap="round" />
+    <path d="M119 150 Q128 165 129 181" fill="none" stroke={cls.sleeve ?? cls.dark} stroke-width="13" stroke-linecap="round" />
+    <circle cx="71" cy="185" r="6.6" fill={def.gloves ?? skin} />
+    <circle cx="129" cy="185" r="6.6" fill={def.gloves ?? skin} />
+    <ClassArt id={look.heroClass} c={cls} layer="front" {uid} />
 
     <!-- neck -->
     <rect x="93" y="127" width="14" height="16" rx="5" fill={skinShade} />
@@ -203,8 +179,8 @@
     <path d="M98.6 106.5 q1.4 1.3 2.8 0" fill="none" stroke={skinShade} stroke-width="2" stroke-linecap="round" />
     <path d="M93.5 113 q6.5 6 13 0" fill="#b5524a" stroke="#2a2230" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
 
-    <!-- front hair -->
-    {#if look.hair === 0}
+    <!-- front hair (spikes tuck under a full hat) -->
+    {#if look.hair === 0 || (look.hair === 5 && hatCoversTop)}
       <path
         d="M56 98 C49 64 71 44 100 44 C130 44 152 62 145 98 C142 86 137 78 129 72 C122 80 108 84 92 82 C98 78 101 73 102 68 C92 76 74 80 64 82 C60 87 57 92 56 98 Z"
         fill={hairC}
@@ -243,6 +219,8 @@
       />
     {/if}
 
+    {#if acc}<AccessoryArt id={acc} layer="face" />{/if}
+
     <!-- headwear -->
     {#if hat}
       <HatArt id={hat} />
@@ -278,7 +256,6 @@
   .eyes,
   .aura,
   .halo,
-  .orb-glow,
   .motes path {
     transform-box: fill-box;
     transform-origin: center;
@@ -296,9 +273,6 @@
   }
   .animate .aura {
     animation: pulse 4s ease-in-out infinite;
-  }
-  .animate .orb-glow {
-    animation: pulse 2.4s ease-in-out infinite;
   }
   .animate .halo {
     animation: halo 3.6s ease-in-out infinite;

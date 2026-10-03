@@ -17,6 +17,9 @@
   import TaskItem from '../components/TaskItem.svelte';
   import QuickAdd from '../components/QuickAdd.svelte';
   import ChestArt from '../components/ChestArt.svelte';
+  import WordsCard from '../components/WordsCard.svelte';
+  import MoodCard from '../components/MoodCard.svelte';
+  import GiftBox from '../components/GiftBox.svelte';
 
   const QUEST_ICON: Record<string, string> = {
     tasks3: 'check',
@@ -49,6 +52,8 @@
   });
   const focusRunning = $derived(timer.status !== 'idle' && timer.phase === 'focus');
   const linkedTask = $derived(store.task(timer.taskId));
+  const giftWaiting = $derived(!store.giftClaimed && store.data.login.lastDay === store.today);
+  const goalP = $derived(Math.min(1, store.todayFocusMin / store.data.settings.dailyGoal));
 </script>
 
 <div class="page">
@@ -70,6 +75,17 @@
     </div>
   </header>
 
+  {#if giftWaiting}
+    <button class="gift-banner" onclick={() => (store.giftOpen = true)} in:rise={{ delay: 20 }}>
+      <span class="gb-art"><GiftBox size={46} /></span>
+      <span class="gb-text">
+        <strong>{t('today.giftBanner')}</strong>
+        <span>{t('rewards.onDay', { n: store.data.login.total })}</span>
+      </span>
+      <span class="btn primary sm">{t('today.giftBannerAction')}<Icon name="right" size={14} /></span>
+    </button>
+  {/if}
+
   <div class="grid">
     <section class="card hero" in:rise={{ delay: 40 }}>
       <button class="stage" onclick={() => store.navigate('hero')} aria-label={t('nav.hero')}>
@@ -78,6 +94,7 @@
           <Avatar
             look={store.data.profile.look}
             hat={store.data.equipped.hat}
+            acc={store.data.equipped.acc}
             pet={store.data.equipped.pet}
             level={store.lvl.level}
             size={150}
@@ -142,6 +159,13 @@
           <div><b class="num">{store.todayFocusMin}</b><span>{t('focus.todayMin')}</span></div>
           <div><b class="num">{store.todaySessions}</b><span>{t('focus.todaySessions')}</span></div>
         </div>
+        <div class="goal" class:done={goalP >= 1}>
+          <div class="goal-top">
+            <span>{t('today.goalTitle')}</span>
+            <b class="num">{goalP >= 1 ? t('today.goalDone') : t('today.goalLeft', { m: store.data.settings.dailyGoal - store.todayFocusMin })}</b>
+          </div>
+          <XPBar progress={goalP} height={6} tone={goalP >= 1 ? 'success' : 'accent'} shimmer={false} />
+        </div>
         <div class="focus-actions">
           <button
             class="btn primary"
@@ -193,6 +217,7 @@
       {/if}
     </section>
 
+    <div class="side">
     <section class="card quests" in:rise={{ delay: 160 }}>
       <div class="section-title">
         <h2>{t('quests.title')}</h2>
@@ -236,6 +261,9 @@
         {/if}
       </div>
     </section>
+    <div in:rise={{ delay: 200 }}><WordsCard /></div>
+    <div in:rise={{ delay: 240 }}><MoodCard /></div>
+    </div>
   </div>
 </div>
 
@@ -286,6 +314,73 @@
   }
   .pill.gold :global(svg) {
     color: var(--gold);
+  }
+  .gift-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 18px;
+    padding: 10px 16px 10px 12px;
+    border-radius: 18px;
+    text-align: left;
+    background:
+      linear-gradient(100deg, var(--gold-soft), var(--accent-softer) 70%),
+      var(--surface);
+    border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+    box-shadow: var(--shadow-sm);
+    transition:
+      transform 0.25s var(--ease-out),
+      box-shadow 0.25s;
+  }
+  .gift-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .gb-art {
+    display: grid;
+    margin: -6px 0;
+  }
+  .gb-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .gb-text strong {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 650;
+  }
+  .gb-text span {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-3);
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+  }
+  .goal {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 12px 0 2px;
+  }
+  .goal-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 750;
+    color: var(--ink-3);
+  }
+  .goal-top b {
+    color: var(--ink-2);
+  }
+  .goal.done .goal-top b {
+    color: var(--success);
   }
   .grid {
     display: grid;
@@ -471,9 +566,6 @@
   }
 
   /* tasks */
-  .tasks {
-    grid-row: span 2;
-  }
   .title-right {
     display: flex;
     align-items: center;
@@ -652,9 +744,6 @@
     }
     .hero {
       grid-column: span 2;
-    }
-    .tasks {
-      grid-row: auto;
     }
   }
 </style>

@@ -6,6 +6,7 @@
   import { rankFor } from '../lib/game';
   import { burst } from '../lib/confetti';
   import { d, pop, rise } from '../lib/motion';
+  import { pickQuote } from '../lib/motivation';
   import Avatar from './Avatar.svelte';
 
   const current = $derived(fx.celebrations[0]);
@@ -33,6 +34,8 @@
       close();
     }
   }
+  // A fresh line for every celebration.
+  const words = $derived(current ? pickQuote('level', store.data.profile.name, false).text : '');
 </script>
 
 <svelte:window {onkeydown} />
@@ -47,6 +50,7 @@
         <Avatar
           look={store.data.profile.look}
           hat={store.data.equipped.hat}
+          acc={store.data.equipped.acc}
           level={current.level}
           size={150}
           crop="bust"
@@ -61,7 +65,7 @@
         </div>
         <p class="desc" in:rise={{ delay: 480 }}>{t(`rankDesc.${rank.id}`)}</p>
       {:else}
-        <p class="desc" in:rise={{ delay: 300 }}>{t('level.body')}</p>
+        <p class="desc" in:rise={{ delay: 300 }}>{words}</p>
       {/if}
       <button class="btn primary lg" onclick={close} in:rise={{ delay: 360 }}>{t('level.continue')}</button>
     </div>

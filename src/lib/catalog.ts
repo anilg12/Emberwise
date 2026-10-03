@@ -6,44 +6,152 @@ import { seeded } from './game';
 /* Shop                                                                */
 /* ------------------------------------------------------------------ */
 
-export type Slot = 'hat' | 'pet' | 'bg' | 'consumable';
+export type Slot = 'char' | 'hat' | 'acc' | 'pet' | 'bg' | 'consumable';
+export type WearSlot = 'hat' | 'acc' | 'pet' | 'bg';
 
 export interface ShopItem {
   id: string;
   slot: Slot;
   price: number;
   minLevel?: number;
+  /** Exclusive: never sold, earned on the login path after this many days. */
+  login?: number;
 }
 
 export const SHOP: ShopItem[] = [
+  { id: 'char_explorer', slot: 'char', price: 260 },
+  { id: 'char_coder', slot: 'char', price: 260 },
+  { id: 'char_pirate', slot: 'char', price: 320, minLevel: 3 },
+  { id: 'char_detective', slot: 'char', price: 340, minLevel: 3 },
+  { id: 'char_ninja', slot: 'char', price: 380, minLevel: 4 },
+  { id: 'char_astronaut', slot: 'char', price: 450, minLevel: 6 },
+
   { id: 'hat_party', slot: 'hat', price: 60 },
+  { id: 'hat_headband', slot: 'hat', price: 70 },
+  { id: 'hat_cap', slot: 'hat', price: 80 },
+  { id: 'hat_beret', slot: 'hat', price: 90 },
+  { id: 'hat_chef', slot: 'hat', price: 100 },
+  { id: 'hat_straw', slot: 'hat', price: 110 },
+  { id: 'hat_safari', slot: 'hat', price: 150 },
+  { id: 'hat_fedora', slot: 'hat', price: 180, minLevel: 3 },
+  { id: 'hat_tricorn', slot: 'hat', price: 220, minLevel: 4 },
   { id: 'hat_beanie', slot: 'hat', price: 80 },
   { id: 'hat_flowers', slot: 'hat', price: 110 },
   { id: 'hat_wizard', slot: 'hat', price: 160 },
   { id: 'hat_viking', slot: 'hat', price: 220, minLevel: 4 },
   { id: 'hat_crown', slot: 'hat', price: 450, minLevel: 10 },
 
+  { id: 'acc_flower', slot: 'acc', price: 60 },
+  { id: 'acc_bowtie', slot: 'acc', price: 70 },
+  { id: 'acc_glasses', slot: 'acc', price: 90 },
+  { id: 'acc_earrings', slot: 'acc', price: 100 },
+  { id: 'acc_sunglasses', slot: 'acc', price: 120 },
+  { id: 'acc_backpack', slot: 'acc', price: 150 },
+  { id: 'acc_headphones', slot: 'acc', price: 160, minLevel: 2 },
+  { id: 'acc_monocle', slot: 'acc', price: 180, minLevel: 4 },
+
   { id: 'pet_frog', slot: 'pet', price: 120 },
+  { id: 'pet_bunny', slot: 'pet', price: 140 },
   { id: 'pet_cat', slot: 'pet', price: 150 },
+  { id: 'pet_turtle', slot: 'pet', price: 170 },
   { id: 'pet_owl', slot: 'pet', price: 220 },
+  { id: 'pet_penguin', slot: 'pet', price: 240, minLevel: 3 },
   { id: 'pet_fox', slot: 'pet', price: 280, minLevel: 4 },
   { id: 'pet_ember', slot: 'pet', price: 350, minLevel: 6 },
   { id: 'pet_dragon', slot: 'pet', price: 600, minLevel: 15 },
 
   { id: 'bg_meadow', slot: 'bg', price: 100 },
   { id: 'bg_night', slot: 'bg', price: 140 },
+  { id: 'bg_rain', slot: 'bg', price: 160 },
   { id: 'bg_library', slot: 'bg', price: 180 },
+  { id: 'bg_beach', slot: 'bg', price: 190 },
+  { id: 'bg_cafe', slot: 'bg', price: 210, minLevel: 2 },
   { id: 'bg_campfire', slot: 'bg', price: 220, minLevel: 3 },
   { id: 'bg_sakura', slot: 'bg', price: 260, minLevel: 5 },
+  { id: 'bg_space', slot: 'bg', price: 380, minLevel: 7 },
   { id: 'bg_aurora', slot: 'bg', price: 400, minLevel: 10 },
 
   { id: 'shield', slot: 'consumable', price: 80 },
+
+  // Login path exclusives: they can only be earned by coming back, day after day.
+  { id: 'acc_ember_pin', slot: 'acc', price: 0, login: 2 },
+  { id: 'hat_sprout', slot: 'hat', price: 0, login: 5 },
+  { id: 'char_guardian', slot: 'char', price: 0, login: 7 },
+  { id: 'pet_moonbunny', slot: 'pet', price: 0, login: 14 },
+  { id: 'bg_moonlake', slot: 'bg', price: 0, login: 21 },
+  { id: 'char_oracle', slot: 'char', price: 0, login: 30 },
+  { id: 'acc_star_glasses', slot: 'acc', price: 0, login: 45 },
+  { id: 'pet_starwhale', slot: 'pet', price: 0, login: 60 },
+  { id: 'char_frost', slot: 'char', price: 0, login: 90 },
+  { id: 'bg_crystal', slot: 'bg', price: 0, login: 120 },
+  { id: 'hat_laurel', slot: 'hat', price: 0, login: 150 },
+  { id: 'char_timekeeper', slot: 'char', price: 0, login: 180 },
+  { id: 'pet_phoenix', slot: 'pet', price: 0, login: 240 },
+  { id: 'bg_celestial', slot: 'bg', price: 0, login: 300 },
+  { id: 'char_sovereign', slot: 'char', price: 0, login: 365 },
 ];
+
+/** Items you can buy (exclusives are earned, not sold). */
+export const FOR_SALE = SHOP.filter((i) => !i.login);
 
 export const MAX_SHIELDS = 3;
 
 export function shopItem(id: string | null | undefined): ShopItem | undefined {
   return id ? SHOP.find((i) => i.id === id) : undefined;
+}
+
+/* ------------------------------------------------------------------ */
+/* Login rewards                                                       */
+/* ------------------------------------------------------------------ */
+
+export interface PathStep {
+  day: number;
+  gold?: number;
+  xp?: number;
+  shields?: number;
+  item?: string;
+}
+
+/** The long road: one stop for the first week, then each week, month and season up to a full year. */
+export const LOGIN_PATH: PathStep[] = [
+  { day: 1, gold: 40 },
+  { day: 2, item: 'acc_ember_pin' },
+  { day: 3, gold: 60, xp: 30 },
+  { day: 5, item: 'hat_sprout' },
+  { day: 7, item: 'char_guardian', gold: 100 },
+  { day: 10, gold: 80, shields: 1 },
+  { day: 14, item: 'pet_moonbunny' },
+  { day: 21, item: 'bg_moonlake' },
+  { day: 30, item: 'char_oracle', gold: 200 },
+  { day: 45, item: 'acc_star_glasses' },
+  { day: 60, item: 'pet_starwhale' },
+  { day: 75, gold: 300, xp: 150 },
+  { day: 90, item: 'char_frost', gold: 300 },
+  { day: 120, item: 'bg_crystal' },
+  { day: 150, item: 'hat_laurel' },
+  { day: 180, item: 'char_timekeeper', gold: 500 },
+  { day: 240, item: 'pet_phoenix' },
+  { day: 300, item: 'bg_celestial' },
+  { day: 365, item: 'char_sovereign', gold: 1000 },
+];
+
+/** A seven-day cycle of small daily gifts; the seventh is a little treasure. */
+export const DAILY_GIFTS: { gold: number; xp: number }[] = [
+  { gold: 20, xp: 0 },
+  { gold: 0, xp: 30 },
+  { gold: 30, xp: 0 },
+  { gold: 0, xp: 45 },
+  { gold: 45, xp: 0 },
+  { gold: 25, xp: 40 },
+  { gold: 80, xp: 60 },
+];
+
+export const WEEK_CHEST = { days: 5, gold: 120, xp: 60 };
+export const MONTH_CHEST = { days: 20, gold: 400, xp: 200 };
+
+export function giftForDay(total: number) {
+  const index = (Math.max(1, total) - 1) % DAILY_GIFTS.length;
+  return { index, ...DAILY_GIFTS[index] };
 }
 
 /* ------------------------------------------------------------------ */
@@ -159,6 +267,9 @@ export interface AchievementCtx {
   owned: number;
   questDays: number;
   reminders: number;
+  logins: number;
+  journalDays: number;
+  breaths: number;
 }
 
 export interface AchievementDef {
@@ -198,6 +309,11 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'rank_legend', icon: 'crown', xp: 0, gold: 100, progress: (c) => count(c.level, 10) },
   { id: 'shopper', icon: 'bag', xp: 20, gold: 0, progress: (c) => count(c.purchases, 1) },
   { id: 'collector', icon: 'gem', xp: 120, gold: 0, progress: (c) => count(c.owned, 8) },
+  { id: 'login_7', icon: 'gift', xp: 50, gold: 20, progress: (c) => count(c.logins, 7) },
+  { id: 'login_30', icon: 'calendar', xp: 150, gold: 60, progress: (c) => count(c.logins, 30) },
+  { id: 'login_100', icon: 'crown', xp: 400, gold: 150, progress: (c) => count(c.logins, 100) },
+  { id: 'journal_7', icon: 'heart', xp: 60, gold: 20, progress: (c) => count(c.journalDays, 7) },
+  { id: 'breathe_5', icon: 'leaf', xp: 40, gold: 15, progress: (c) => count(c.breaths, 5) },
 ];
 
 export function achievementContext(data: Data, level: number): AchievementCtx {
@@ -217,6 +333,9 @@ export function achievementContext(data: Data, level: number): AchievementCtx {
     owned: data.owned.length,
     questDays: 0,
     reminders: data.counters.remindersSet,
+    logins: data.login.total,
+    journalDays: Object.keys(data.journal).length,
+    breaths: data.counters.breaths,
   };
   for (const e of data.log as LogEntry[]) {
     if (e.kind === 'task') {

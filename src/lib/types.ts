@@ -4,10 +4,44 @@ export type Accent = 'ember' | 'rose' | 'ocean' | 'forest' | 'plum' | 'honey';
 export type MotionPref = 'system' | 'full' | 'reduced';
 export type Difficulty = 'easy' | 'normal' | 'hard' | 'epic';
 export type Repeat = 'none' | 'daily' | 'weekdays' | 'custom';
-export type HeroClass = 'wizard' | 'knight' | 'ranger' | 'bard';
+export type HeroClass =
+  | 'wizard'
+  | 'knight'
+  | 'ranger'
+  | 'bard'
+  | 'scientist'
+  | 'chef'
+  | 'gardener'
+  | 'artist'
+  | 'astronaut'
+  | 'pirate'
+  | 'ninja'
+  | 'detective'
+  | 'explorer'
+  | 'coder'
+  | 'guardian'
+  | 'oracle'
+  | 'frost'
+  | 'timekeeper'
+  | 'sovereign';
 export type Body = 'f' | 'm';
-export type AmbientKind = 'off' | 'rain' | 'fire' | 'waves' | 'wind' | 'brown';
-export type Route = 'today' | 'quests' | 'focus' | 'hero' | 'shop' | 'awards' | 'stats' | 'settings';
+export type AmbientKind =
+  | 'rain'
+  | 'storm'
+  | 'waves'
+  | 'wind'
+  | 'forest'
+  | 'stream'
+  | 'night'
+  | 'cafe'
+  | 'library'
+  | 'fire'
+  | 'train'
+  | 'brown'
+  | 'pink';
+/** Which ambience layers play together, each with its own level (0–1). Empty = silence. */
+export type AmbientMix = Partial<Record<AmbientKind, number>>;
+export type Route = 'today' | 'quests' | 'focus' | 'hero' | 'shop' | 'rewards' | 'awards' | 'stats' | 'settings';
 
 export interface Look {
   body: Body;
@@ -15,6 +49,8 @@ export interface Look {
   hair: number;
   hairColor: number;
   heroClass: HeroClass;
+  /** Outfit colour variant of the current character (0–3). */
+  tone: number;
 }
 
 export interface Profile {
@@ -70,7 +106,9 @@ export type LogKind =
   | 'chest'
   | 'achievement'
   | 'streak'
-  | 'purchase';
+  | 'purchase'
+  | 'login'
+  | 'journal';
 
 export interface LogEntry {
   id: string;
@@ -114,8 +152,12 @@ export interface Settings {
   longEvery: number;
   autoBreak: boolean;
   autoFocus: boolean;
-  ambient: AmbientKind;
+  ambient: AmbientMix;
   ambientVolume: number;
+  /** Gentle lines of encouragement after actions. */
+  motivation: boolean;
+  /** Daily focus goal in minutes. */
+  dailyGoal: number;
   closeToTray: boolean;
   openAtLogin: boolean;
   pinWhileFocus: boolean;
@@ -136,6 +178,25 @@ export interface Equipped {
   hat: string | null;
   pet: string | null;
   bg: string | null;
+  acc: string | null;
+}
+
+export interface LoginState {
+  /** Distinct days Emberwise was opened. */
+  total: number;
+  streak: number;
+  best: number;
+  lastDay: string | null;
+  /** Recent login days (newest last), for the calendar and the weekly/monthly chests. */
+  days: string[];
+  /** Claimed rewards: gift:<day>, week:<monday>, month:<yyyy-mm>, path:<n>. */
+  claimed: string[];
+}
+
+export interface JournalEntry {
+  /** 1 (heavy) … 5 (glowing). */
+  mood: number;
+  note: string;
 }
 
 export interface Data {
@@ -154,6 +215,10 @@ export interface Data {
   achievements: Record<string, string>;
   claimed: Record<string, string[]>;
   streak: { current: number; best: number; lastDay: string | null };
-  counters: { tasksCreated: number; remindersSet: number; purchases: number };
+  counters: { tasksCreated: number; remindersSet: number; purchases: number; breaths: number };
+  login: LoginState;
+  journal: Record<string, JournalEntry>;
+  /** Saved motivation lines (quote ids). */
+  favorites: string[];
   timer: PersistedTimer | null;
 }

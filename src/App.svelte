@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { store } from './lib/state.svelte';
   import { timer } from './lib/timer.svelte';
   import { fx } from './lib/fx.svelte';
   import { t } from './lib/i18n.svelte';
   import { sfx, configureSfx } from './lib/sound';
-  import { playAmbient, stopAmbient, setAmbientLevel } from './lib/ambient';
-  import { focusOn } from './lib/actions';
+  import { setMix, stopAll, setMasterLevel } from './lib/ambience';
+  import { focusOn, motivate } from './lib/actions';
+  import { timeTag } from './lib/motivation';
   import { rise } from './lib/motion';
   import {
     platform,
@@ -24,17 +25,23 @@
   import Floaters from './components/Floaters.svelte';
   import LevelUp from './components/LevelUp.svelte';
   import TaskEditor from './components/TaskEditor.svelte';
+  import Whisper from './components/Whisper.svelte';
+  import AboutDialog from './components/AboutDialog.svelte';
+  import LoginGift from './components/LoginGift.svelte';
   import Onboarding from './views/Onboarding.svelte';
   import Today from './views/Today.svelte';
   import Quests from './views/Quests.svelte';
   import Focus from './views/Focus.svelte';
   import Hero from './views/Hero.svelte';
   import Shop from './views/Shop.svelte';
+  import Rewards from './views/Rewards.svelte';
   import Awards from './views/Awards.svelte';
   import Stats from './views/Stats.svelte';
   import Settings from './views/Settings.svelte';
 
-  const ROUTES: Route[] = ['today', 'quests', 'focus', 'hero', 'shop', 'awards', 'stats'];
+  const ROUTES: Route[] = ['today', 'quests', 'focus', 'hero', 'shop', 'rewards', 'awards', 'stats'];
+  const GIFT_KEY = 'emberwise-gift-shown';
+  const GREET_KEY = 'emberwise-greeted';
 
   let scroller: HTMLDivElement | undefined = $state();
 
@@ -67,12 +74,19 @@
       }
     };
 
+    store.onGoal = () => {
+      sfx.achievement();
+      fx.toast({ kind: 'success', icon: 'target', title: t('today.goalDone'), body: '+25 XP · +10 ' + t('common.gold'), duration: 5200 });
+      setTimeout(() => motivate('goal', 'wow'), 900);
+    };
+
     let disposed = false;
     store.init().then(() => {
       if (disposed) return;
       timer.restore();
       store.checkReminders();
       requestAnimationFrame(() => root.classList.add('theme-ready'));
+      greet();
     });
 
     const interval = setInterval(() => {
@@ -82,6 +96,7 @@
 
     const wake = () => {
       store.tick();
+      maybeShowGift();
       timer.wake();
       store.checkReminders();
     };
@@ -147,24 +162,61 @@
     configureSfx(store.data.settings.sounds, store.data.settings.volume);
   });
 
+  /** The daily gift opens on its own once a day; later it waits on the Today page and in Rewards. */
+  function maybeShowGift() {
+    if (!store.ready || !store.data.onboarded || store.giftClaimed || store.data.login.lastDay !== store.today) return false;
+    let shown: string | null = null;
+    try {
+      shown = localStorage.getItem(GIFT_KEY);
+    } catch {
+      /* storage may be unavailable */
+    }
+    if (shown === store.today) return false;
+    try {
+      localStorage.setItem(GIFT_KEY, store.today);
+    } catch {
+      /* ignore */
+    }
+    setTimeout(() => {
+      if (!fx.celebrations.length) store.giftOpen = true;
+    }, 900);
+    return true;
+  }
+
+  /** A gentle time-of-day line when the app opens, a few hours apart at most. */
+  function greet() {
+    if (maybeShowGift() || !store.data.onboarded) return;
+    let last = 0;
+    try {
+      last = Number(localStorage.getItem(GREET_KEY) ?? 0);
+    } catch {
+      /* ignore */
+    }
+    if (Date.now() - last < 3 * 3600_000) return;
+    try {
+      localStorage.setItem(GREET_KEY, String(Date.now()));
+    } catch {
+      /* ignore */
+    }
+    setTimeout(() => motivate(timeTag(), 'happy', 8000), 1600);
+  }
+
+  // A brand-new hero gets the first gift right after onboarding.
+  $effect(() => {
+    if (store.data.onboarded && store.ready) untrack(() => maybeShowGift());
+  });
+
   $effect(() => {
     setCloseToTray(store.data.settings.closeToTray);
   });
 
-  // Ambience plays while a focus session is running. Only stop what we started,
-  // so a short preview on the Focus page isn't cut off.
-  let ambientByTimer = false;
+  // Ambience plays during focus sessions, or whenever the user chose to just listen.
   $effect(() => {
-    const kind = store.data.settings.ambient;
-    const on = timer.status === 'running' && timer.phase === 'focus' && kind !== 'off';
-    setAmbientLevel(store.data.settings.ambientVolume);
-    if (on) {
-      playAmbient(kind);
-      ambientByTimer = true;
-    } else if (ambientByTimer) {
-      stopAmbient();
-      ambientByTimer = false;
-    }
+    const mix = store.data.settings.ambient;
+    setMasterLevel(store.data.settings.ambientVolume);
+    const on = (timer.status === 'running' && timer.phase === 'focus') || store.listening;
+    if (on) setMix(mix);
+    else stopAll();
   });
 
   // Keep the idle timer in sync with duration settings.
@@ -245,6 +297,8 @@
                 <Hero />
               {:else if store.route === 'shop'}
                 <Shop />
+              {:else if store.route === 'rewards'}
+                <Rewards />
               {:else if store.route === 'awards'}
                 <Awards />
               {:else if store.route === 'stats'}
@@ -258,6 +312,9 @@
       </main>
     </div>
     <TaskEditor />
+    <LoginGift open={store.giftOpen} onclose={() => (store.giftOpen = false)} />
+    <AboutDialog />
+    <Whisper />
   {/if}
   <LevelUp />
   <Toasts />

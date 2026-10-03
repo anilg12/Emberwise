@@ -1,11 +1,15 @@
 import type {
+  AmbientMix,
   Category,
   Data,
   Difficulty,
   Equipped,
   FocusSession,
+  HeroClass,
+  JournalEntry,
   Lang,
   LogEntry,
+  LoginState,
   Route,
   Settings,
   Task,
@@ -36,16 +40,24 @@ import {
 import {
   ACHIEVEMENTS,
   CHEST_REWARD,
+  LOGIN_PATH,
   MAX_SHIELDS,
+  MONTH_CHEST,
+  WEEK_CHEST,
   achievementContext,
   factsForDay,
+  giftForDay,
   questsForDay,
   shopItem,
+  type WearSlot,
 } from './catalog';
+import { AMBIENT_KINDS } from './ambience';
+import { CHARACTER_IDS, character } from './characters';
 import { detectLang, i18n, itemName, t } from './i18n.svelte';
 import { loadText, saveText, saveTextSync } from './platform';
 import { fx } from './fx.svelte';
 import { sfx } from './sound';
+import { pickQuote } from './motivation';
 
 /* ------------------------------------------------------------------ */
 /* Defaults & normalisation                                            */
@@ -98,8 +110,10 @@ export function defaultSettings(lang: Lang = detectLang()): Settings {
     longEvery: 4,
     autoBreak: true,
     autoFocus: false,
-    ambient: 'off',
-    ambientVolume: 0.5,
+    ambient: { rain: 0.7 },
+    ambientVolume: 0.55,
+    motivation: true,
+    dailyGoal: 60,
     // Reminders only ring while Emberwise runs, so closing keeps it in the tray by default.
     closeToTray: true,
     openAtLogin: false,
@@ -114,7 +128,7 @@ export function createDefault(lang?: Lang): Data {
     onboarded: false,
     profile: {
       name: '',
-      look: { body: 'f', skin: 1, hair: 1, hairColor: 1, heroClass: 'wizard' },
+      look: { body: 'f', skin: 1, hair: 1, hairColor: 1, heroClass: 'wizard', tone: 0 },
     },
     settings: defaultSettings(lang),
     tasks: [],
@@ -122,14 +136,57 @@ export function createDefault(lang?: Lang): Data {
     log: [],
     sessions: [],
     owned: [],
-    equipped: { hat: null, pet: null, bg: null },
+    equipped: { hat: null, pet: null, bg: null, acc: null },
     shields: 0,
     achievements: {},
     claimed: {},
     streak: { current: 0, best: 0, lastDay: null },
-    counters: { tasksCreated: 0, remindersSet: 0, purchases: 0 },
+    counters: { tasksCreated: 0, remindersSet: 0, purchases: 0, breaths: 0 },
+    login: { total: 0, streak: 0, best: 0, lastDay: null, days: [], claimed: [] },
+    journal: {},
+    favorites: [],
     timer: null,
   };
+}
+
+/** Old builds stored a single ambience name; newer ones a whole mix. */
+function normalizeMix(v: unknown, fallback: AmbientMix): AmbientMix {
+  if (typeof v === 'string') return v === 'off' ? {} : AMBIENT_KINDS.includes(v as never) ? { [v]: 0.7 } : fallback;
+  if (!isObj(v)) return fallback;
+  const out: AmbientMix = {};
+  for (const k of AMBIENT_KINDS) {
+    const n = v[k];
+    if (typeof n === 'number' && Number.isFinite(n) && n > 0) out[k] = Math.min(1, Math.round(n * 100) / 100);
+  }
+  return out;
+}
+
+function normalizeLogin(v: unknown): LoginState {
+  const l = isObj(v) ? v : {};
+  const days = Array.isArray(l.days) ? [...new Set((l.days as unknown[]).filter(isDay))].sort().slice(-400) : [];
+  return {
+    total: Math.round(num(l.total, days.length, 0)),
+    streak: Math.round(num(l.streak, 0, 0)),
+    best: Math.round(num(l.best, 0, 0)),
+    lastDay: isDay(l.lastDay) ? l.lastDay : (days.at(-1) ?? null),
+    days,
+    claimed: Array.isArray(l.claimed) ? [...new Set((l.claimed as unknown[]).filter((x): x is string => typeof x === 'string'))] : [],
+  };
+}
+
+function normalizeJournal(v: unknown): Record<string, JournalEntry> {
+  const out: Record<string, JournalEntry> = {};
+  if (!isObj(v)) return out;
+  for (const [k, e] of Object.entries(v)) {
+    if (!isDay(k) || !isObj(e)) continue;
+    out[k] = { mood: Math.round(num(e.mood, 3, 1, 5)), note: str(e.note).slice(0, 280) };
+  }
+  return out;
+}
+
+/** Monday of the week a day belongs to. */
+export function weekStart(day: string): string {
+  return addDays(day, -((weekday(day) + 6) % 7));
 }
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -192,10 +249,10 @@ export function normalizeData(raw: unknown): Data {
     longEvery: Math.round(num(s.longEvery, ds.longEvery, 2, 10)),
     autoBreak: typeof s.autoBreak === 'boolean' ? s.autoBreak : ds.autoBreak,
     autoFocus: typeof s.autoFocus === 'boolean' ? s.autoFocus : ds.autoFocus,
-    ambient: ['off', 'rain', 'fire', 'waves', 'wind', 'brown'].includes(s.ambient as string)
-      ? (s.ambient as Settings['ambient'])
-      : ds.ambient,
+    ambient: normalizeMix(s.ambient, ds.ambient),
     ambientVolume: num(s.ambientVolume, ds.ambientVolume, 0, 1),
+    motivation: typeof s.motivation === 'boolean' ? s.motivation : ds.motivation,
+    dailyGoal: Math.round(num(s.dailyGoal, ds.dailyGoal, 10, 600)),
     closeToTray: typeof s.closeToTray === 'boolean' ? s.closeToTray : ds.closeToTray,
     openAtLogin: typeof s.openAtLogin === 'boolean' ? s.openAtLogin : ds.openAtLogin,
     pinWhileFocus: typeof s.pinWhileFocus === 'boolean' ? s.pinWhileFocus : ds.pinWhileFocus,
@@ -254,7 +311,10 @@ export function normalizeData(raw: unknown): Data {
     hat: typeof eq.hat === 'string' && owned.includes(eq.hat) ? eq.hat : null,
     pet: typeof eq.pet === 'string' && owned.includes(eq.pet) ? eq.pet : null,
     bg: typeof eq.bg === 'string' && owned.includes(eq.bg) ? eq.bg : null,
+    acc: typeof eq.acc === 'string' && owned.includes(eq.acc) ? eq.acc : null,
   };
+  const cls = CHARACTER_IDS.includes(look.heroClass as HeroClass) ? (look.heroClass as HeroClass) : bl.heroClass;
+  const clsOk = character(cls).tier === 'free' || owned.includes(`char_${cls}`);
 
   const st = isObj(raw.streak) ? raw.streak : {};
   const ct = isObj(raw.counters) ? raw.counters : {};
@@ -282,9 +342,8 @@ export function normalizeData(raw: unknown): Data {
         skin: Math.round(num(look.skin, bl.skin, 0, 5)),
         hair: Math.round(num(look.hair, bl.hair, 0, 5)),
         hairColor: Math.round(num(look.hairColor, bl.hairColor, 0, 7)),
-        heroClass: ['wizard', 'knight', 'ranger', 'bard'].includes(look.heroClass as string)
-          ? (look.heroClass as Data['profile']['look']['heroClass'])
-          : bl.heroClass,
+        heroClass: clsOk ? cls : bl.heroClass,
+        tone: clsOk ? Math.round(num(look.tone, 0, 0, 3)) : 0,
       },
     },
     settings,
@@ -306,7 +365,11 @@ export function normalizeData(raw: unknown): Data {
       tasksCreated: Math.round(num(ct.tasksCreated, 0, 0)),
       remindersSet: Math.round(num(ct.remindersSet, 0, 0)),
       purchases: Math.round(num(ct.purchases, 0, 0)),
+      breaths: Math.round(num(ct.breaths, 0, 0)),
     },
+    login: normalizeLogin(raw.login),
+    journal: normalizeJournal(raw.journal),
+    favorites: Array.isArray(raw.favorites) ? [...new Set((raw.favorites as unknown[]).filter((x): x is string => typeof x === 'string'))].slice(0, 500) : [],
     timer,
   };
 }
@@ -369,6 +432,10 @@ class Store {
   systemReducedMotion = $state(false);
   editor = $state<EditorState>({ open: false, taskId: null, preset: null });
   focusTaskRequest = $state<string | null>(null);
+  /** Ambience playing outside a focus session ("just listen"). */
+  listening = $state(false);
+  aboutOpen = $state(false);
+  giftOpen = $state(false);
 
   totalXp = $derived(this.data.log.reduce((s, e) => s + e.xp, 0));
   gold = $derived(Math.max(0, this.data.log.reduce((s, e) => s + e.gold, 0)));
@@ -417,6 +484,27 @@ class Store {
     done.sort((a, b) => (b.doneAt ?? '').localeCompare(a.doneAt ?? ''));
     return { open, done };
   });
+  goalReached = $derived(this.todayFocusMin >= this.data.settings.dailyGoal);
+  giftClaimed = $derived(this.data.login.claimed.includes(`gift:${this.today}`));
+  gift = $derived(giftForDay(this.data.login.total));
+  week = $derived.by(() => {
+    const start = weekStart(this.today);
+    const count = this.data.login.days.filter((d) => d >= start && d <= this.today).length;
+    return { key: `week:${start}`, start, count, ready: count >= WEEK_CHEST.days, claimed: this.data.login.claimed.includes(`week:${start}`) };
+  });
+  month = $derived.by(() => {
+    const key = this.today.slice(0, 7);
+    const count = this.data.login.days.filter((d) => d.startsWith(key)).length;
+    return { key: `month:${key}`, count, ready: count >= MONTH_CHEST.days, claimed: this.data.login.claimed.includes(`month:${key}`) };
+  });
+  /** Login path stops that are reached but not yet collected. */
+  pathReady = $derived(LOGIN_PATH.filter((p) => p.day <= this.data.login.total && !this.data.login.claimed.includes(`path:${p.day}`)));
+  rewardsWaiting = $derived(
+    (this.giftClaimed || this.data.login.lastDay !== this.today ? 0 : 1) +
+      this.pathReady.length +
+      (this.week.ready && !this.week.claimed ? 1 : 0) +
+      (this.month.ready && !this.month.claimed ? 1 : 0),
+  );
   chestState = $derived.by(() => {
     const claimed = this.data.claimed[this.today] ?? [];
     if (claimed.includes('chest')) return 'opened' as const;
@@ -427,6 +515,7 @@ class Store {
   private dirty = false;
   private achievementsTimer: ReturnType<typeof setTimeout> | null = null;
   onReminder: ((e: ReminderEvent) => void) | null = null;
+  onGoal: (() => void) | null = null;
 
   /* ---------------- lifecycle ---------------- */
 
@@ -450,6 +539,7 @@ class Store {
     this.today = dayKey();
     this.checkStreakDecay();
     this.pruneOld();
+    this.touchLogin();
     this.ready = true;
     if (parsed) this.queueAchievementCheck(1200);
   }
@@ -491,6 +581,111 @@ class Store {
       this.pruneOld();
       this.persist();
     }
+    this.touchLogin();
+  }
+
+  /* ---------------- daily login ---------------- */
+
+  /** Counts today as a login day — only while the window is actually in front of the user. */
+  touchLogin(): boolean {
+    if (!this.data.onboarded) return false;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return false;
+    const l = this.data.login;
+    const day = this.today;
+    if (l.lastDay === day) return false;
+    l.streak = l.lastDay && diffDays(l.lastDay, day) === 1 ? l.streak + 1 : 1;
+    l.best = Math.max(l.best, l.streak);
+    l.lastDay = day;
+    l.total++;
+    if (!l.days.includes(day)) l.days.push(day);
+    if (l.days.length > 400) l.days.splice(0, l.days.length - 400);
+    this.persist();
+    this.queueAchievementCheck();
+    return true;
+  }
+
+  claimGift(): { gold: number; xp: number } | null {
+    if (this.giftClaimed || this.data.login.lastDay !== this.today) return null;
+    const g = this.gift;
+    this.data.login.claimed.push(`gift:${this.today}`);
+    this.trimClaims();
+    this.reward({ kind: 'login', xp: g.xp, gold: g.gold, ref: `gift:${this.today}`, label: 'gift' });
+    return { gold: g.gold, xp: g.xp };
+  }
+
+  claimWeek(): { gold: number; xp: number } | null {
+    const w = this.week;
+    if (!w.ready || w.claimed) return null;
+    this.data.login.claimed.push(w.key);
+    this.reward({ kind: 'login', xp: WEEK_CHEST.xp, gold: WEEK_CHEST.gold, ref: w.key, label: 'week' });
+    return { gold: WEEK_CHEST.gold, xp: WEEK_CHEST.xp };
+  }
+
+  claimMonth(): { gold: number; xp: number } | null {
+    const m = this.month;
+    if (!m.ready || m.claimed) return null;
+    this.data.login.claimed.push(m.key);
+    this.reward({ kind: 'login', xp: MONTH_CHEST.xp, gold: MONTH_CHEST.gold, ref: m.key, label: 'month' });
+    return { gold: MONTH_CHEST.gold, xp: MONTH_CHEST.xp };
+  }
+
+  claimPath(day: number): { gold: number; xp: number; item?: string; shields?: number } | null {
+    const step = LOGIN_PATH.find((p) => p.day === day);
+    const key = `path:${day}`;
+    if (!step || step.day > this.data.login.total || this.data.login.claimed.includes(key)) return null;
+    this.data.login.claimed.push(key);
+    if (step.item && !this.data.owned.includes(step.item)) this.data.owned.push(step.item);
+    if (step.shields) this.data.shields = Math.min(MAX_SHIELDS, this.data.shields + step.shields);
+    const gold = step.gold ?? 0;
+    const xp = step.xp ?? 0;
+    if (gold || xp) this.reward({ kind: 'login', xp, gold, ref: key, label: step.item ?? 'path' });
+    else this.persist();
+    this.queueAchievementCheck();
+    return { gold, xp, item: step.item, shields: step.shields };
+  }
+
+  /** Daily gift claims only matter for a while; path, week and month keys stay. */
+  private trimClaims() {
+    const cutoff = `gift:${addDays(this.today, -60)}`;
+    this.data.login.claimed = this.data.login.claimed.filter((k) => !k.startsWith('gift:') || k >= cutoff);
+  }
+
+  /* ---------------- journal & small rituals ---------------- */
+
+  setMood(mood: number): boolean {
+    const day = this.today;
+    const prev = this.data.journal[day];
+    this.data.journal[day] = { mood: Math.max(1, Math.min(5, Math.round(mood))), note: prev?.note ?? '' };
+    if (!prev) this.reward({ kind: 'journal', xp: 10, gold: 0, ref: `journal:${day}` });
+    else this.persist();
+    this.queueAchievementCheck();
+    return !prev;
+  }
+
+  setJournalNote(note: string) {
+    const e = this.data.journal[this.today];
+    if (!e) return;
+    e.note = note.slice(0, 280);
+    this.persist();
+  }
+
+  recordBreath() {
+    this.data.counters.breaths++;
+    this.persist();
+    this.queueAchievementCheck();
+  }
+
+  toggleFavorite(id: string): boolean {
+    const i = this.data.favorites.indexOf(id);
+    if (i >= 0) this.data.favorites.splice(i, 1);
+    else this.data.favorites.unshift(id);
+    this.persist();
+    return i < 0;
+  }
+
+  setMix(mix: AmbientMix) {
+    this.data.settings.ambient = mix;
+    this.persist();
   }
 
   navigate(route: Route) {
@@ -539,6 +734,10 @@ class Store {
     if (bonus) {
       this.reward({ kind: 'streak', xp: bonus, gold: Math.round(bonus / 4), ref: `streak:${s.current}:${day}` });
       fx.toast({ kind: 'success', icon: 'flame', title: t('streak.milestone', { n: s.current, xp: bonus }) });
+      if (this.data.settings.motivation) {
+        const q = pickQuote('streak', this.data.profile.name);
+        setTimeout(() => fx.say(q.text, q.id, 'wow'), 1400);
+      }
     }
   }
 
@@ -742,6 +941,7 @@ class Store {
     const task = this.task(input.taskId);
     if (task) task.focusMinutes += minutes;
     const { xp, gold } = focusReward(minutes, input.completed);
+    const goalBefore = this.goalReached;
     if (input.completed || minutes >= 5) this.touchStreak();
     if (xp > 0 || gold > 0) {
       this.reward({
@@ -754,6 +954,11 @@ class Store {
       });
     } else {
       this.persist();
+    }
+    if (!goalBefore && this.goalReached && !(this.data.claimed[this.today] ?? []).includes('goal')) {
+      (this.data.claimed[this.today] ??= []).push('goal');
+      this.reward({ kind: 'quest', xp: 25, gold: 10, ref: `goal:${this.today}`, label: 'goal' });
+      this.onGoal?.();
     }
     return { xp, gold };
   }
@@ -779,9 +984,25 @@ class Store {
 
   /* ---------------- shop ---------------- */
 
-  canBuy(id: string): 'ok' | 'owned' | 'level' | 'gold' | 'maxed' {
+  owns(id: string | null | undefined): boolean {
+    return !!id && this.data.owned.includes(id);
+  }
+
+  hasCharacter(id: HeroClass): boolean {
+    return character(id).tier === 'free' || this.data.owned.includes(`char_${id}`);
+  }
+
+  setCharacter(id: HeroClass, tone = 0) {
+    if (!this.hasCharacter(id)) return;
+    this.data.profile.look.heroClass = id;
+    this.data.profile.look.tone = Math.max(0, Math.min(3, tone));
+    this.persist();
+  }
+
+  canBuy(id: string): 'ok' | 'owned' | 'level' | 'gold' | 'maxed' | 'exclusive' {
     const item = shopItem(id);
     if (!item) return 'owned';
+    if (item.login) return this.data.owned.includes(id) ? 'owned' : 'exclusive';
     if (item.slot === 'consumable') {
       if (this.data.shields >= MAX_SHIELDS) return 'maxed';
     } else if (this.data.owned.includes(id)) return 'owned';
@@ -796,14 +1017,15 @@ class Store {
     if (item.slot === 'consumable') this.data.shields = Math.min(MAX_SHIELDS, this.data.shields + 1);
     else {
       this.data.owned.push(id);
-      this.data.equipped[item.slot] = id;
+      if (item.slot === 'char') this.setCharacter(id.slice(5) as HeroClass, 0);
+      else this.data.equipped[item.slot] = id;
     }
     this.data.counters.purchases++;
     this.reward({ kind: 'purchase', xp: 0, gold: -item.price, ref: `buy:${id}:${uid()}`, label: itemName(id) });
     return true;
   }
 
-  equip(slot: keyof Equipped, id: string | null) {
+  equip(slot: WearSlot, id: string | null) {
     if (id && !this.data.owned.includes(id)) return;
     this.data.equipped[slot] = id;
     this.persist();

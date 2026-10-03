@@ -23,7 +23,6 @@
   import Switch from '../components/Switch.svelte';
   import Stepper from '../components/Stepper.svelte';
   import Logo from '../components/Logo.svelte';
-  import Signature from '../components/Signature.svelte';
   import Modal from '../components/Modal.svelte';
 
   const ACCENTS: { id: Accent; color: string }[] = [
@@ -35,7 +34,6 @@
     { id: 'honey', color: '#d48b12' },
   ];
 
-  const LINKEDIN = 'https://www.linkedin.com/in/an%C4%B1l-g%C3%BCl-753417249';
   const GITHUB = 'https://github.com/anilg12/Emberwise';
 
   const version = __APP_VERSION__;
@@ -206,6 +204,10 @@
           <Stepper value={s.longEvery} min={2} max={8} unit="×" onchange={(v) => set('longEvery', v)} label={t('settings.longEvery')} />
         </div>
         <div class="row">
+          <span class="row-label">{t('settings.dailyGoal')}</span>
+          <Stepper value={s.dailyGoal} min={15} max={480} step={15} unit={t('common.min')} onchange={(v) => set('dailyGoal', v)} label={t('settings.dailyGoal')} />
+        </div>
+        <div class="row">
           <span class="row-label">{t('settings.autoBreak')}</span>
           <Switch checked={s.autoBreak} onchange={(v) => set('autoBreak', v)} label={t('settings.autoBreak')} />
         </div>
@@ -223,6 +225,13 @@
 
       <section class="card" in:rise={{ delay: 90 }}>
         <h2><Icon name="volume" size={18} />{t('settings.sound')} & {t('settings.notifications')}</h2>
+        <div class="row">
+          <div class="row-text">
+            <span class="row-label">{t('settings.motivation')}</span>
+            <span class="row-desc">{t('settings.motivationDesc')}</span>
+          </div>
+          <Switch checked={s.motivation} onchange={(v) => set('motivation', v)} label={t('settings.motivation')} />
+        </div>
         <div class="row">
           <span class="row-label">{t('settings.sounds')}</span>
           <Switch checked={s.sounds} onchange={(v) => set('sounds', v)} label={t('settings.sounds')} />
@@ -340,11 +349,8 @@
           </div>
         </div>
         <p class="desc">{t('settings.aboutText')}</p>
-        <div class="maker">
-          <Signature size={44} caption={t('settings.crafted')} />
-        </div>
         <div class="links">
-          <button class="btn sm ghost" onclick={() => openExternal(LINKEDIN)}><Icon name="linkedin" size={16} />{t('settings.linkedin')}</button>
+          <button class="btn sm soft" onclick={() => (store.aboutOpen = true)}><Icon name="info" size={16} />{t('common.about')}</button>
           <button class="btn sm ghost" onclick={() => openExternal(GITHUB)}><Icon name="github" size={16} />{t('settings.github')}</button>
         </div>
       </section>
@@ -664,11 +670,6 @@
     font-size: 13px;
     font-weight: 700;
     color: var(--ink-3);
-  }
-  .maker {
-    display: flex;
-    justify-content: center;
-    padding: 8px 0 14px;
   }
   .links {
     display: flex;

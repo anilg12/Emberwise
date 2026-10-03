@@ -3,35 +3,28 @@
   import { timer, type Phase } from '../lib/timer.svelte';
   import { t, tv } from '../lib/i18n.svelte';
   import { focusReward } from '../lib/game';
-  import { playAmbient, stopAmbient } from '../lib/ambient';
   import { fx } from '../lib/fx.svelte';
   import { sfx } from '../lib/sound';
   import { rise } from '../lib/motion';
-  import type { AmbientKind } from '../lib/types';
+  import { pickQuote } from '../lib/motivation';
   import Icon from '../components/Icon.svelte';
   import Ember from '../components/Ember.svelte';
   import Segmented from '../components/Segmented.svelte';
+  import Mixer from '../components/Mixer.svelte';
+  import Breathe from '../components/Breathe.svelte';
 
   const R = 132;
   const C = 2 * Math.PI * R;
 
   let confirmStop = $state(false);
   let pickerOpen = $state(false);
-  let previewTimer: ReturnType<typeof setTimeout> | null = null;
+  let breatheOpen = $state(false);
 
   const phaseOptions = $derived([
     { value: 'focus' as Phase, label: t('focus.phase.focus') },
     { value: 'short' as Phase, label: t('focus.phase.short') },
     { value: 'long' as Phase, label: t('focus.phase.long') },
   ]);
-  const AMBIENT: { id: AmbientKind; icon: string }[] = [
-    { id: 'off', icon: 'mute' },
-    { id: 'rain', icon: 'drop' },
-    { id: 'fire', icon: 'flame' },
-    { id: 'waves', icon: 'wave' },
-    { id: 'wind', icon: 'wind' },
-    { id: 'brown', icon: 'volume' },
-  ];
 
   const digits = $derived(timer.clock.split(''));
   const linked = $derived(store.task(timer.taskId));
@@ -44,6 +37,13 @@
     const tips = tv<string[]>('focus.emberSays');
     return tips[(timer.cycle + new Date(store.clock).getHours()) % tips.length];
   });
+  // A fresh line for every break.
+  const breakWords = $derived.by(() => {
+    timer.cycle;
+    timer.phase;
+    return pickQuote('break', store.data.profile.name, false).text;
+  });
+  const goalP = $derived(Math.min(1, store.todayFocusMin / store.data.settings.dailyGoal));
   // Ember grows brighter as the session goes on.
   const emberScale = $derived(timer.phase === 'focus' && timer.status !== 'idle' ? 0.82 + timer.progress * 0.32 : 0.92);
 
@@ -70,27 +70,6 @@
     }
   }
 
-  function chooseAmbient(kind: AmbientKind) {
-    store.setSetting('ambient', kind);
-    // Give a short taste when nothing is running yet.
-    if (timer.status !== 'running' || timer.phase !== 'focus') {
-      if (previewTimer) clearTimeout(previewTimer);
-      if (kind === 'off') stopAmbient();
-      else {
-        playAmbient(kind);
-        previewTimer = setTimeout(() => {
-          if (timer.status !== 'running' || timer.phase !== 'focus') stopAmbient();
-        }, 3500);
-      }
-    }
-  }
-
-  $effect(() => {
-    return () => {
-      if (previewTimer) clearTimeout(previewTimer);
-      if (timer.status !== 'running' || timer.phase !== 'focus') stopAmbient();
-    };
-  });
 </script>
 
 <div class="page">
@@ -103,6 +82,13 @@
       <div><b class="num">{store.todayFocusMin}</b><span>{t('focus.todayMin')}</span></div>
       <div><b class="num">{store.todaySessions}</b><span>{t('focus.todaySessions')}</span></div>
       <div><b class="num">{store.streakNow}</b><span>{t('focus.streak')}</span></div>
+      <div class="goal" class:done={goalP >= 1} title={t('today.goalTitle')}>
+        <svg viewBox="0 0 36 36" aria-hidden="true">
+          <circle cx="18" cy="18" r="15" class="g-track" />
+          <circle cx="18" cy="18" r="15" class="g-fill" stroke-dasharray="94.25" stroke-dashoffset={94.25 * (1 - goalP)} transform="rotate(-90 18 18)" />
+        </svg>
+        <span>{t('focus.goalOf', { m: store.todayFocusMin, g: store.data.settings.dailyGoal })}</span>
+      </div>
     </div>
   </header>
 
@@ -218,39 +204,21 @@
         {/if}
       </section>
 
-      <section class="card panel">
-        <p class="eyebrow">{t('focus.ambient')}</p>
-        <div class="ambient">
-          {#each AMBIENT as a (a.id)}
-            <button class="amb" class:on={store.data.settings.ambient === a.id} onclick={() => chooseAmbient(a.id)}>
-              <Icon name={a.icon} size={19} />
-              <span>{t(`focus.sounds.${a.id}`)}</span>
-            </button>
-          {/each}
-        </div>
-        <label class="vol" class:dim={store.data.settings.ambient === 'off'}>
-          <Icon name="volume" size={16} />
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={store.data.settings.ambientVolume}
-            style="--p:{store.data.settings.ambientVolume * 100}%"
-            oninput={(e) => store.setSetting('ambientVolume', Number((e.currentTarget as HTMLInputElement).value))}
-            aria-label={t('focus.volume')}
-          />
-        </label>
-      </section>
+      <Mixer />
 
-      <section class="card panel tip-card">
-        <Ember size={36} mood="happy" glow={false} animate={false} />
-        <p>{tip}</p>
+      <section class="card panel tip-card" class:rest={isBreak}>
+        <Ember size={36} mood={isBreak ? 'sleepy' : 'happy'} glow={false} animate={false} />
+        <div>
+          <p>{isBreak ? breakWords : tip}</p>
+          <button class="breathe-btn" onclick={() => (breatheOpen = true)}><Icon name="leaf" size={14} />{t('focus.breathe')}</button>
+        </div>
       </section>
       <p class="kb"><span class="kbd">Space</span> {t('focus.shortcut').split(':')[1] ?? ''}</p>
     </aside>
   </div>
 </div>
+
+<Breathe open={breatheOpen} onclose={() => (breatheOpen = false)} />
 
 <style>
   .today-stats {
@@ -553,48 +521,6 @@
     background: var(--accent-soft);
     color: var(--accent-text);
   }
-  .ambient {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-  }
-  .amb {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    padding: 10px 4px 8px;
-    border-radius: 12px;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    color: var(--ink-3);
-    font-size: 11.5px;
-    font-weight: 750;
-    transition: all 0.18s var(--ease-out);
-  }
-  .amb:hover {
-    color: var(--ink);
-    border-color: var(--line-2);
-  }
-  .amb.on {
-    background: var(--accent-soft);
-    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-    color: var(--accent-text);
-  }
-  .vol {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 12px;
-    color: var(--ink-3);
-    transition: opacity 0.2s;
-  }
-  .vol.dim {
-    opacity: 0.45;
-  }
-  input[type='range'] {
-    flex: 1;
-  }
   .tip-card {
     display: flex;
     align-items: center;
@@ -602,6 +528,60 @@
     background: var(--accent-softer);
     border-color: transparent;
     box-shadow: none;
+  }
+  .tip-card.rest {
+    background: var(--success-soft);
+  }
+  .breathe-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    height: 28px;
+    padding: 0 11px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--ink-2);
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    border: 1px solid var(--line);
+    transition:
+      transform 0.2s var(--ease-spring),
+      color 0.2s;
+  }
+  .breathe-btn:hover {
+    color: var(--ink);
+    transform: translateY(-1px);
+  }
+  .goal {
+    flex-direction: row !important;
+    gap: 8px;
+    min-width: 0 !important;
+  }
+  .goal svg {
+    width: 34px;
+    height: 34px;
+    flex: none;
+  }
+  .g-track {
+    fill: none;
+    stroke: var(--surface-3);
+    stroke-width: 4;
+  }
+  .g-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s var(--ease-out);
+  }
+  .goal.done .g-fill {
+    stroke: var(--success);
+  }
+  .goal span {
+    font-size: 12.5px !important;
+    color: var(--ink-2) !important;
+    font-weight: 800 !important;
   }
   .tip-card p {
     font-family: var(--font-display);
