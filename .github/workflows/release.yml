@@ -1,0 +1,90 @@
+name: Build & Release
+
+# Builds the Windows installer and the macOS (Apple Silicon + Intel) disk images.
+# Push a tag like v1.0.0 to publish a GitHub Release with all files attached,
+# or run it manually from the Actions tab to just get the build artifacts.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            args: --win --x64
+          - name: macos
+            os: macos-latest
+            args: --mac --arm64 --x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Make sure the Electron binary is present
+        run: node node_modules/electron/install.js
+
+      - name: Type check
+        run: npm run check
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build renderer
+        run: npx vite build
+
+      - name: Package
+        run: npx electron-builder ${{ matrix.args }} --publish never
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: emberwise-${{ matrix.name }}
+          path: |
+            release/*.exe
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish
+        uses: softprops/action-gh-release@v3
+        with:
+          files: artifacts/*
+          generate_release_notes: true
+          body: |
+            ## Emberwise ${{ github.ref_name }}
+
+            **Windows:** download `Emberwise-Setup-*.exe` and run it. It installs and opens by itself.
+            **macOS (M1–M5 and newer):** download `Emberwise-*-mac-arm64.dmg`, open it and drag Emberwise into Applications.
+            **macOS (Intel):** use the `mac-x64` file.
+
+            First launch on macOS: right-click Emberwise → **Open** (or System Settings → Privacy & Security → **Open Anyway**).
+
+            Fully offline · Türkçe & English · Light & dark themes · Crafted by Anıl Gül

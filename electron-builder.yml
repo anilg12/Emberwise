@@ -1,0 +1,90 @@
+appId: com.anilgul.emberwise
+productName: Emberwise
+copyright: Copyright © 2026 Anıl Gül
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**
+  - electron/**
+  - package.json
+  - '!**/*.map'
+asar: true
+compression: maximum
+electronLanguages:
+  - en-US
+  - tr
+publish: null
+
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+  requestedExecutionLevel: asInvoker
+  artifactName: Emberwise-Setup-${version}.${ext}
+
+nsis:
+  oneClick: true
+  perMachine: false
+  allowElevation: false
+  runAfterFinish: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Emberwise
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  uninstallDisplayName: Emberwise
+  deleteAppDataOnUninstall: false
+  installerLanguages:
+    - tr_TR
+    - en_US
+
+mac:
+  icon: build/icon.icns
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+    - target: zip
+      arch:
+        - arm64
+        - x64
+  identity: '-'
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  darkModeSupport: true
+  minimumSystemVersion: '12.0'
+  artifactName: Emberwise-${version}-mac-${arch}.${ext}
+  extendInfo:
+    CFBundleLocalizations:
+      - en
+      - tr
+    NSHumanReadableCopyright: Copyright © 2026 Anıl Gül
+
+dmg:
+  title: Emberwise
+  background: build/dmg-background.png
+  iconSize: 104
+  window:
+    width: 660
+    height: 420
+  contents:
+    - x: 190
+      y: 236
+      type: file
+    - x: 470
+      y: 236
+      type: link
+      path: /Applications
+  artifactName: Emberwise-${version}-mac-${arch}.${ext}
+
+linux:
+  icon: build/icon.png
+  category: Utility
+  target:
+    - AppImage
+  artifactName: Emberwise-${version}-linux-${arch}.${ext}

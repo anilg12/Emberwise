@@ -1,0 +1,53 @@
+{
+  "name": "emberwise",
+  "productName": "Emberwise",
+  "version": "1.0.0",
+  "description": "Emberwise — a cozy focus RPG. Turn your tasks into quests and your focus into XP.",
+  "author": {
+    "name": "Anıl Gül",
+    "url": "https://github.com/anilg12"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/anilg12/Emberwise",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anilg12/Emberwise.git"
+  },
+  "private": true,
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "e2e": "vite build && electron scripts/e2e.cjs",
+    "shots": "vite build && electron scripts/shots.cjs",
+    "icons": "node scripts/make-icons.mjs",
+    "start": "vite build && electron .",
+    "dist:win": "vite build && electron-builder --win --x64",
+    "dist:mac": "vite build && electron-builder --mac --arm64 --x64",
+    "dist": "vite build && electron-builder"
+  },
+  "devDependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/nunito": "^5.3.0",
+    "@fontsource/caveat": "^5.3.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tsconfig/svelte": "^5.0.8",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.5",
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  },
+  "allowScripts": {
+    "electron": true,
+    "sharp": true,
+    "electron-winstaller": true
+  }
+}
