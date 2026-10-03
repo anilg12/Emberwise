@@ -1,116 +1,116 @@
-<p align="center">
-  <img src="docs/icon.png" width="128" height="128" alt="Emberwise icon" />
-</p>
+<div align="center">
 
-<h1 align="center">Emberwise</h1>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/banner-dark.svg">
+  <img src="docs/media/banner-light.svg" alt="Emberwise: Odağını ateşle, kahramanını büyüt." width="100%">
+</picture>
 
-<p align="center">
-  <b>Odağını ateşle, kahramanını büyüt.</b><br />
-  <i>Light your focus, grow your hero.</i>
-</p>
+<br>
+<br>
 
-<p align="center">
-  Windows · macOS (Apple Silicon M1–M5 &amp; Intel) · 100% offline · Türkçe &amp; English · Light &amp; dark
-</p>
+<a href="https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-Setup.exe"><img src="docs/media/btn-windows.svg" alt="Windows için indir" height="56"></a>&nbsp;
+<a href="https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-mac-arm64.dmg"><img src="docs/media/btn-mac-arm.svg" alt="macOS (Apple Silicon M1–M5) için indir" height="56"></a>&nbsp;
+<a href="https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-mac-x64.dmg"><img src="docs/media/btn-mac-intel.svg" alt="macOS (Intel) için indir" height="56"></a>
 
-<p align="center">
-  <img src="docs/screenshots/today-light.webp" alt="Emberwise — Today" width="880" />
-</p>
+<sub>Ücretsiz · Hesap yok, reklam yok · İnternet bağlantısı gerekmez · <a href="https://github.com/anilg12/Emberwise/releases">Tüm sürümler</a> · <a href="#english">English</a></sub>
 
----
+</div>
 
-## 🇹🇷 Türkçe
+<br>
 
-**Emberwise**, görevlerini maceraya, odaklandığın her dakikayı deneyime dönüştüren sıcak, sevimli bir üretkenlik oyunudur. Görev eklersin, amacını yazarsın, hatırlatıcı kurarsın; tamamladıkça ve odaklandıkça XP ve altın kazanır, kahramanını büyütür, rütbe atlarsın.
+**Emberwise**, görevlerini maceraya, odaklandığın her dakikayı deneyime çeviren sıcak bir odak oyunu. Görev ekler, amacını yazar, hatırlatıcı kurarsın; bitirdikçe ve odaklandıkça XP ve altın kazanır, kahramanını büyütür, rütbe atlarsın.
 
-Bu uygulama, JavaFX ile yazılmış **[Odak Menajeri RPG](https://github.com/anilg12/Odak-Menajeri-RPG)** projesinin baştan aşağı yeniden tasarlanmış, Windows ve macOS'ta çalışan hâlidir.
+JavaFX ile yazdığım **[Odak Menajeri RPG](https://github.com/anilg12/Odak-Menajeri-RPG)**'nin baştan aşağı yeniden yazılmış, Windows ve Mac'te çalışan hâli.
 
-### İndir ve kur
-
-En güncel sürüm: **[Releases](https://github.com/anilg12/Emberwise/releases/latest)**
-
-| Platform | Dosya | Kurulum |
-| --- | --- | --- |
-| Windows 10 / 11 | `Emberwise-Setup-x.y.z.exe` | Çift tıkla, kendiliğinden kurulur ve açılır. Yönetici izni istemez. |
-| macOS · Apple Silicon (M1–M5 ve sonrası) | `Emberwise-x.y.z-mac-arm64.dmg` | Aç, Emberwise'ı **Uygulamalar** klasörüne sürükle. |
-| macOS · Intel | `Emberwise-x.y.z-mac-x64.dmg` | Aynı şekilde. |
-
-> **Windows SmartScreen:** Uygulama henüz ücretli bir kod imzalama sertifikasıyla imzalanmadığı için, internetten indirilen kurulum dosyasında "Windows bilgisayarınızı korudu" uyarısı çıkabilir. **Ek bilgi → Yine de çalıştır** demen yeterli.
->
-> **macOS:** Uygulama Apple tarafından noter onaylı (notarized) değil. İlk açılışta Emberwise'a **sağ tık → Aç** de ya da **Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç**'ı kullan. Gerekirse Terminal'de: `xattr -dr com.apple.quarantine /Applications/Emberwise.app`
-
-### Özellikler
-
-**Orijinal Odak Menajeri RPG'deki her şey**
-- 👤 Kadın / Erkek karakter seçimi — artık el çizimi, özelleştirilebilir bir kahraman
-- 🧠 Görev tanımlama: görev adı, **amaç** ("Neden yapıyorsun?") ve hatırlatma saati
-- 🔔 Belirlenen saatte bildirim; her hatırlatıcı yalnızca bir kez çalar
-- ⚔️ Görevi tamamlayınca **+50 XP** (zorluğa göre 25 – 120 XP)
-- ✅ Görev tamamlama ve silme (geri alma desteğiyle)
-- 🧱 Seviye ve rütbe: **Acemi → Çalışkan → Usta → Efsane** (+ Mitik ve Ölümsüz)
-- 📊 Bir sonraki seviyeye kalan XP'yi gösteren ilerleme çubuğu
-- 🌙 Karanlık tema — artık aydınlık ve sisteme göre tema da var
-
-**Yeni gelenler**
-- 🔥 **Odak zamanlayıcısı** (Pomodoro): odak / kısa mola / uzun mola, görev bağlama, otomatik geçişler, sistem tepsisinde ve görev çubuğunda kalan süre
-- 🌧️ **Ortam sesleri**: yağmur, şömine, dalgalar, rüzgâr, derin uğultu — hepsi çevrimdışı, gerçek zamanlı sentezlenir
-- 📜 Gelişmiş görevler: zorluk, kategori, tarih, **tekrarlayan görevler** (her gün / hafta içi / belirli günler), adımlar (alt görevler), arama ve filtreler
-- ⚡ Hızlı ekleme: `Matematik çalış 14:30` yaz, hatırlatıcı kendiliğinden kurulsun; `yarın` yazarsan yarına eklenir
-- 🎯 **Günlük görevler** ve **günün sandığı**
-- 🔥 Günlük seri ve seriyi koruyan **Kor kalkanı**
-- 🛍️ **Dükkân**: şapkalar, yoldaşlar (kedi, baykuş, tilki, kor ruhu, yavru ejder…) ve diyarlar (yıldızlı gece, kütüphane, kamp ateşi, sakura, kutup ışıkları…)
-- 🏆 24 **başarım**, seviye atlama kutlamaları ve konfeti
-- 📈 **İstatistikler**: odak grafiği, etkinlik haritası, kategori dağılımı, macera günlüğü
-- 🧙 Kahraman nitelikleri: Odak, Disiplin, Bilgelik, Cesaret
-- 🎨 6 vurgu rengi, animasyon tercihi (azaltılmış hareket desteği)
-- 🌍 Türkçe ve İngilizce, ilk açılışta sistem diline göre otomatik
-- 💾 Yedek al / yedekten yükle, veriler yalnızca senin bilgisayarında
-- ⌨️ Klavye kısayolları (`Ctrl/⌘+N`, `Ctrl/⌘+1…7`, `Boşluk`, `/`)
-- 🖥️ Sistem tepsisi / menü çubuğu, bilgisayar açılınca başlatma, "üstte tut" modu
-
-### Gizlilik
-
-Emberwise **hiçbir zaman internete bağlanmaz**. Hesap yok, reklam yok, takip yok. Tüm verilerin tek bir dosyada, bilgisayarında saklanır:
-- Windows: `%APPDATA%\Emberwise\emberwise-data.json`
-- macOS: `~/Library/Application Support/Emberwise/emberwise-data.json`
-
----
-
-## 🇬🇧 English
-
-**Emberwise** is a cozy productivity game that turns your tasks into quests and every focused minute into experience. Add quests, write down *why* they matter, set reminders — then complete them and focus to earn XP and gold, grow your hero and climb the ranks.
-
-It is a ground-up redesign of the JavaFX project **[Odak Menajeri RPG](https://github.com/anilg12/Odak-Menajeri-RPG)**, rebuilt for Windows and macOS.
-
-### Download
-
-Grab the latest build from **[Releases](https://github.com/anilg12/Emberwise/releases/latest)**: the `.exe` for Windows, the `mac-arm64.dmg` for Apple Silicon (M1–M5 and newer) or `mac-x64.dmg` for Intel Macs.
-
-> The builds are not code-signed with a paid certificate yet. On Windows choose **More info → Run anyway** if SmartScreen appears. On macOS right-click the app → **Open** the first time (or System Settings → Privacy & Security → **Open Anyway**).
-
-### Highlights
-
-- Quests with purpose, difficulty, categories, dates, repeating schedules, steps and one-time reminders
-- Pomodoro focus timer with procedural ambient sounds, tray/menu-bar countdown and taskbar progress
-- XP, gold, levels and the original ranks — **Novice → Diligent → Master → Legend** — plus Mythic and Immortal
-- Daily quests, a daily chest, streaks with ember shields, 24 achievements
-- A hand-drawn hero you can dress up, companions and realms from the shop
-- Stats: focus chart, activity heatmap, quests by category, adventure log
-- Light, dark and system themes, six accent colors, reduced-motion support
-- Turkish and English, fully offline, data stays on your machine
+<br>
 
 <p align="center">
-  <img src="docs/screenshots/focus-dark.webp" alt="Focus timer" width="430" />
-  <img src="docs/screenshots/hero-light.webp" alt="Hero" width="430" />
-  <img src="docs/screenshots/shop-light.webp" alt="Shop" width="430" />
-  <img src="docs/screenshots/stats-dark.webp" alt="Stats" width="430" />
-  <img src="docs/screenshots/quests-light.webp" alt="Quests" width="430" />
-  <img src="docs/screenshots/awards-light.webp" alt="Achievements" width="430" />
-  <img src="docs/screenshots/welcome.webp" alt="Welcome" width="430" />
-  <img src="docs/screenshots/create-hero.webp" alt="Create your hero" width="430" />
+  <img src="docs/media/quest.gif" alt="Görev ekle, tamamla, seviye atla" width="100%">
 </p>
 
----
+## Görev ekle, bitir, seviye atla
+
+Göreve bir ad ve bir amaç yaz (*"Neden yapıyorsun?"*), istersen saat kur. Acelen varsa kutuya `Matematik çalış 14:30` yazıp Enter'a basman yeter: saat de hatırlatıcı da kendiliğinden ayarlanır, sonuna `yarın` eklersen yarına düşer.
+
+Bitirdiğin her görev zorluğuna göre **25 ile 120 XP** arası ve biraz altın getirir. Seviye atladığında küçük bir kutlama, rütbe atladığında yeni unvanın seni bekler. Tekrarlayan görevler, alt adımlar, kategoriler ve arama da var.
+
+## Odak ateşi
+
+<p align="center">
+  <img src="docs/media/focus.gif" alt="Odak zamanlayıcısı" width="100%">
+</p>
+
+Pomodoro zamanlayıcısını başlat, kor ruhu sen odaklandıkça büyüsün. Seans bitince XP ve altın kazanır, kısa bir molaya geçersin. Yağmur, şömine, dalga, rüzgâr ya da derin bir uğultu eşlik edebilir; bu seslerin hepsi uygulamanın içinde anlık üretilir, internet istemez. Kalan süre sistem tepsisinde ve görev çubuğunda da görünür.
+
+## Kahramanını sen tasarla
+
+<p align="center">
+  <img src="docs/media/hero.gif" alt="Kahraman tasarlama" width="100%">
+</p>
+
+Kadın ya da erkek, ten rengi, altı saç modeli, sekiz saç rengi ve dört sınıf: Büyücü, Şövalye, Korucu, Ozan. Rütben yükseldikçe kahramanın atkı, pelerin ve parıltı kazanır. Odak, Disiplin, Bilgelik ve Cesaret nitelikleri de senin alışkanlıklarına göre büyür.
+
+## Dükkân, yoldaşlar ve diyarlar
+
+<p align="center">
+  <img src="docs/media/shop.gif" alt="Dükkân" width="100%">
+</p>
+
+Odaklanarak kazandığın altınla şapka, yoldaş ve diyar alırsın: Kedi Pamuk, Baykuş Bilge, Tilki Kıvılcım, Kor Ruhu, Yavru Ejder; yıldızlı gece, eski kütüphane, kamp ateşi, sakura bahçesi, kutup ışıkları… Üzerine gelince kahramanın üstünde önizlenir. Seriyi koruyan *Kor kalkanı* da burada.
+
+## Aydınlık mı, koyu mu?
+
+<p align="center">
+  <img src="docs/media/theme.gif" alt="Tema ve renkler" width="100%">
+</p>
+
+Aydınlık, koyu ya da sisteme göre. Altı vurgu rengi, Türkçe ve İngilizce arayüz, azaltılmış hareket seçeneği. İlk açılışta dil ve tema bilgisayarına göre kendiliğinden seçilir.
+
+## Rütbeler
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/ranks-dark.svg">
+  <img src="docs/media/ranks-light.svg" alt="Acemi, Çalışkan, Usta, Efsane, Mitik, Ölümsüz" width="100%">
+</picture>
+
+Orijinal dört rütbe aynen duruyor: **Acemi → Çalışkan → Usta → Efsane**. Gerçekten azimli olanlar için iki yenisi geldi: **Mitik** ve **Ölümsüz**. Bunların yanında günlük görevler ve günün sandığı, günlük seri, 24 başarım ve odak grafikleriyle bir istatistik sayfası da var.
+
+## İlk açılış
+
+<p align="center">
+  <img src="docs/media/onboarding.gif" alt="İlk açılış" width="100%">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/stats-dark.webp" alt="İstatistik" width="49%">
+  <img src="docs/screenshots/editor-dark.webp" alt="Görev düzenleyici" width="49%">
+</p>
+
+## Kurulum
+
+**Windows 10 / 11:** [`Emberwise-Setup.exe`](https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-Setup.exe) dosyasına çift tıkla. Yönetici izni istemez; kurulur, masaüstüne kısayol koyar ve kendiliğinden açılır. Windows "bilgisayarınızı korudu" uyarısı gösterirse **Ek bilgi → Yine de çalıştır** de (uygulama henüz ücretli bir sertifikayla imzalanmadı).
+
+**macOS:** Apple Silicon (M1–M5 ve sonrası) için [`Emberwise-mac-arm64.dmg`](https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-mac-arm64.dmg), Intel için [`Emberwise-mac-x64.dmg`](https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-mac-x64.dmg). Dosyayı aç, Emberwise'ı **Uygulamalar** klasörüne sürükle. İlk açılışta uygulamaya **sağ tık → Aç** de ya da **Sistem Ayarları → Gizlilik ve Güvenlik → Yine de Aç**'ı kullan.
+
+**Verilerin:** Emberwise internete hiç bağlanmaz. Her şey tek bir dosyada, senin bilgisayarında durur:
+`%APPDATA%\Emberwise\emberwise-data.json` (Windows) · `~/Library/Application Support/Emberwise/emberwise-data.json` (macOS).
+Ayarlar'dan yedek alıp geri yükleyebilirsin.
+
+<br>
+
+## English
+
+**Emberwise** is a cozy focus game for Windows and macOS. Add quests and write down *why* they matter, set reminders, then complete them and focus to earn XP and gold, grow your hero and climb the ranks: **Novice → Diligent → Master → Legend → Mythic → Immortal**.
+
+- Quests with a purpose, difficulty, categories, dates, repeating schedules, steps and one-time reminders
+- Quick add: type `Study math 14:30 tomorrow` and the reminder sets itself
+- Pomodoro focus timer with offline, procedurally generated ambience (rain, fireplace, waves, wind, brown noise)
+- Daily quests and a daily chest, streaks with ember shields, 24 achievements, stats
+- A hand-drawn hero you can dress up, plus companions and realms from the shop
+- Light, dark and system themes, six accent colors, Turkish and English
+- Fully offline: no account, no ads, no tracking; your data stays on your computer
+
+**Download:** [Windows](https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-Setup.exe) · [macOS Apple Silicon](https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-mac-arm64.dmg) · [macOS Intel](https://github.com/anilg12/Emberwise/releases/latest/download/Emberwise-mac-x64.dmg). The builds are not signed with a paid certificate yet: on Windows choose **More info → Run anyway** if SmartScreen appears; on macOS right-click the app and choose **Open** the first time.
 
 ## Development
 
@@ -125,34 +125,39 @@ npm run e2e        # end-to-end smoke test in the real Electron window
 npm run check      # type check
 ```
 
-Build installers:
+Installers:
 
 ```bash
-npm run dist:win   # release/Emberwise-Setup-x.y.z.exe   (run on Windows)
-npm run dist:mac   # release/Emberwise-x.y.z-mac-*.dmg    (run on macOS)
+npm run dist:win   # release/Emberwise-Setup.exe        (on Windows)
+npm run dist:mac   # release/Emberwise-mac-*.dmg        (on macOS)
 ```
 
-Pushing a tag such as `v1.0.1` runs the GitHub Actions workflow, which builds Windows and macOS (arm64 + x64) installers and publishes them on the Releases page.
+Pushing a tag such as `v1.0.1` runs the GitHub Actions workflow, which builds the Windows and macOS (arm64 + x64) installers and publishes them on the Releases page. On Windows, `YAYINLA.cmd` does the whole release in one double-click.
 
-### Stack
+README artwork: `node scripts/make-readme-art.mjs` (animated SVGs) and `npx electron scripts/record.cjs --scene=quest` (demo GIFs recorded from the real app; scenes: `quest`, `focus`, `hero`, `shop`, `theme`, `onboarding`).
 
-Electron · Svelte 5 · TypeScript · Vite. No runtime dependencies, no network access. Icons, the hero, companions, realms and the Ember mascot are hand-drawn SVG; every sound is synthesized with the Web Audio API.
+**Stack:** Electron · Svelte 5 · TypeScript · Vite. No runtime dependencies and no network access. Icons, the hero, companions, realms and the Ember mascot are hand-drawn SVG; every sound is synthesized with the Web Audio API.
 
 ```
 electron/          main process, preload bridge, tray assets
 src/lib/           game rules, store, timer, i18n, sounds, ambience
 src/components/    UI building blocks, hero & item art
 src/views/         Today, Quests, Focus, Hero, Shop, Achievements, Stats, Settings, Onboarding
-scripts/           icon generator, screenshot harness, e2e test
+scripts/           icons, README art, demo recorder, screenshots, e2e test
 tests/             unit tests
 ```
 
----
+<br>
 
-<p align="center">
-  Tasarlayan ve geliştiren · Designed &amp; built by<br />
-  <b>ANIL GÜL</b><br />
-  <a href="https://www.linkedin.com/in/an%C4%B1l-g%C3%BCl-753417249">LinkedIn</a>
-</p>
+<div align="center">
 
-<p align="center"><sub>MIT License © 2026 Anıl Gül</sub></p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/signature-dark.svg">
+  <img src="docs/media/signature-light.svg" alt="Tasarlayan ve geliştiren: Anıl Gül" width="360">
+</picture>
+
+[LinkedIn](https://www.linkedin.com/in/an%C4%B1l-g%C3%BCl-753417249) · [Odak Menajeri RPG](https://github.com/anilg12/Odak-Menajeri-RPG) · [GitHub](https://github.com/anilg12)
+
+<sub>MIT License © 2026 Anıl Gül</sub>
+
+</div>

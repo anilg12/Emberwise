@@ -1,7 +1,7 @@
 {
   "name": "emberwise",
   "productName": "Emberwise",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Emberwise — a cozy focus RPG. Turn your tasks into quests and your focus into XP.",
   "author": {
     "name": "Anıl Gül",
@@ -33,10 +33,14 @@
     "@fontsource-variable/fraunces": "^5.3.0",
     "@fontsource-variable/nunito": "^5.3.0",
     "@fontsource/caveat": "^5.3.0",
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/nunito": "^5.3.0",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@tsconfig/svelte": "^5.0.8",
     "electron": "^44.5.1",
     "electron-builder": "^26.15.3",
+    "gifenc": "^1.0.3",
+    "opentype.js": "^2.0.0",
     "png-to-ico": "^3.0.2",
     "sharp": "^0.35.5",
     "svelte": "^5.57.1",

@@ -26,7 +26,7 @@ try {
   $Repo    = 'Emberwise'
   $Version = (Get-Content package.json -Raw | ConvertFrom-Json).version
   $Tag     = "v$Version"
-  $Exe     = "release\Emberwise-Setup-$Version.exe"
+  $Exe     = "release\Emberwise-Setup.exe"
 
   Step 'Araclar kontrol ediliyor'
   if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Fail 'Git bulunamadi. Kur: winget install Git.Git' }
@@ -74,8 +74,8 @@ try {
   $notes = @"
 ## Emberwise $Version
 
-**Windows:** ``Emberwise-Setup-$Version.exe`` dosyasini indir ve calistir - kendiliginden kurulur ve acilir.
-**macOS (M1-M5 ve sonrasi):** ``mac-arm64.dmg`` dosyasini indir, Emberwise'i Applications klasorune surukle. Intel Mac icin ``mac-x64``.
+**Windows:** ``Emberwise-Setup.exe`` dosyasini indir ve calistir - kendiliginden kurulur ve acilir.
+**macOS (M1-M5 ve sonrasi):** ``Emberwise-mac-arm64.dmg`` dosyasini indir, Emberwise'i Applications klasorune surukle. Intel Mac icin ``Emberwise-mac-x64.dmg``.
 macOS dosyalari GitHub Actions tarafindan birkac dakika icinde bu sayfaya eklenir.
 
 Ilk acilista macOS: sag tik -> Ac (veya Sistem Ayarlari -> Gizlilik ve Guvenlik -> Yine de Ac).

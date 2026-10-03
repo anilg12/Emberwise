@@ -53,13 +53,13 @@
     </span>
   {/if}
   <button class="more" onclick={more} title={t('tasks.new')} aria-label={t('tasks.new')}><Icon name="sliders" size={16} /></button>
+  <!-- Floats over the content instead of pushing it down, so nothing jumps when focus leaves. -->
+  <p class="hint" class:show={focused} aria-hidden={!focused}>{t('today.quickHint')}</p>
 </div>
-{#if focused}
-  <p class="hint">{t('today.quickHint')}</p>
-{/if}
 
 <style>
   .qa {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -127,9 +127,29 @@
     color: var(--ink);
   }
   .hint {
-    margin: 7px 4px 0;
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 6px);
+    left: 10px;
+    max-width: calc(100% - 20px);
+    margin: 0;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
     font-size: 12px;
-    color: var(--ink-4);
+    color: var(--ink-3);
     font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition:
+      opacity 0.18s,
+      transform 0.22s var(--ease-out);
+  }
+  .hint.show {
+    opacity: 1;
+    transform: none;
   }
 </style>

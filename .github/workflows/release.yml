@@ -59,7 +59,6 @@ jobs:
           path: |
             release/*.exe
             release/*.dmg
-            release/*.zip
           if-no-files-found: error
 
   release:
@@ -81,9 +80,9 @@ jobs:
           body: |
             ## Emberwise ${{ github.ref_name }}
 
-            **Windows:** download `Emberwise-Setup-*.exe` and run it. It installs and opens by itself.
-            **macOS (M1–M5 and newer):** download `Emberwise-*-mac-arm64.dmg`, open it and drag Emberwise into Applications.
-            **macOS (Intel):** use the `mac-x64` file.
+            **Windows:** download `Emberwise-Setup.exe` and run it. It installs and opens by itself.
+            **macOS (M1–M5 and newer):** download `Emberwise-mac-arm64.dmg`, open it and drag Emberwise into Applications.
+            **macOS (Intel):** use `Emberwise-mac-x64.dmg`.
 
             First launch on macOS: right-click Emberwise → **Open** (or System Settings → Privacy & Security → **Open Anyway**).
 

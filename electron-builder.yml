@@ -23,7 +23,7 @@ win:
       arch:
         - x64
   requestedExecutionLevel: asInvoker
-  artifactName: Emberwise-Setup-${version}.${ext}
+  artifactName: Emberwise-Setup.${ext}
 
 nsis:
   oneClick: true
@@ -49,16 +49,12 @@ mac:
       arch:
         - arm64
         - x64
-    - target: zip
-      arch:
-        - arm64
-        - x64
   identity: '-'
   hardenedRuntime: false
   gatekeeperAssess: false
   darkModeSupport: true
   minimumSystemVersion: '12.0'
-  artifactName: Emberwise-${version}-mac-${arch}.${ext}
+  artifactName: Emberwise-mac-${arch}.${ext}
   extendInfo:
     CFBundleLocalizations:
       - en
@@ -80,11 +76,11 @@ dmg:
       y: 236
       type: link
       path: /Applications
-  artifactName: Emberwise-${version}-mac-${arch}.${ext}
+  artifactName: Emberwise-mac-${arch}.${ext}
 
 linux:
   icon: build/icon.png
   category: Utility
   target:
     - AppImage
-  artifactName: Emberwise-${version}-linux-${arch}.${ext}
+  artifactName: Emberwise-linux-${arch}.${ext}
