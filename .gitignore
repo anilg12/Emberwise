@@ -7,7 +7,6 @@ shots/
 Thumbs.db
 .vscode/
 .idea/
-.claude/
 build/icon-preview.png
 publish-log.txt
 promo/out/
