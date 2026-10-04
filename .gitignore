@@ -13,3 +13,4 @@ publish-log.txt
 promo/out/
 promo/slides.built.html
 .cache/
+promo/gorsel.built.html

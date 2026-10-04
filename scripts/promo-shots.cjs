@@ -14,7 +14,7 @@ const arg = (name, def) => {
 };
 const scene = arg('scene', 'today');
 const out = path.resolve(arg('out', 'promo/out/shots'));
-const THEMES = { today: 'light', levelup: 'light', focus: 'dark', hero: 'light', shop: 'dark', stats: 'dark', welcome: 'light', rewards: 'light', mixer: 'dark', chars: 'light', settings: 'light', about: 'dark' };
+const THEMES = { today: 'light', levelup: 'light', focus: 'dark', hero: 'light', shop: 'dark', stats: 'dark', welcome: 'light', rewards: 'light', gift: 'light', mixer: 'dark', chars: 'light', settings: 'light', about: 'dark' };
 const themeArg = process.argv.find((a) => a.startsWith('--theme='));
 const theme = themeArg ? themeArg.split('=')[1] : (THEMES[scene] ?? 'light');
 
@@ -43,6 +43,10 @@ function profile() {
   data.equipped = { hat: 'hat_wizard', pet: 'pet_cat', bg: 'bg_night' };
   data.tasks = data.tasks.filter((t) => !t.title.includes('Eski')).slice(0, 5);
   if (scene === 'focus') data.settings.focusMin = 1;
+  if (scene === 'gift') {
+    data.settings.motivation = true;
+    data.login.claimed = data.login.claimed.filter((k) => !k.startsWith('gift:'));
+  }
   if (scene === 'hero') {
     data.profile.look = { body: 'f', skin: 2, hair: 4, hairColor: 2, heroClass: 'ranger' };
     data.equipped = { hat: 'hat_flowers', pet: 'pet_fox', bg: 'bg_meadow' };
@@ -120,6 +124,14 @@ const SCENES = {
     await h.hover('.grid .item', 3);
     await wait(900);
     await snap(win, 'shop');
+  },
+  async gift(win, h) {
+    await h.click('.gift-banner');
+    await wait(1300);
+    await h.click('.gift-pop .actions .btn.primary');
+    await wait(2200);
+    await snap(win, 'gift');
+    console.log('rect', JSON.stringify(await h.js(`(() => { const r = document.querySelector('.modal-root .panel').getBoundingClientRect(); return [r.left, r.top, r.width, r.height, devicePixelRatio]; })()`)));
   },
   async rewards(win, h) {
     await h.nav(5);

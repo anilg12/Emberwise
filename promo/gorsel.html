@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Emberwise 1.1 — LinkedIn</title>
+<link rel="stylesheet" href="../node_modules/@fontsource-variable/fraunces/full.css">
+<link rel="stylesheet" href="../node_modules/@fontsource-variable/fraunces/full-italic.css">
+<link rel="stylesheet" href="../node_modules/@fontsource-variable/nunito/wght.css">
+<link rel="stylesheet" href="../node_modules/@fontsource/caveat/700.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #16121e; }
+  body { font-family: 'Nunito Variable', sans-serif; -webkit-font-smoothing: antialiased; }
+  .art {
+    position: relative; width: 1080px; height: 1350px; overflow: hidden; color: #f7efe5;
+    background:
+      radial-gradient(ellipse 720px 560px at 8% 4%, rgba(255, 128, 66, .30), transparent 70%),
+      radial-gradient(ellipse 680px 600px at 100% 62%, rgba(140, 104, 220, .24), transparent 70%),
+      radial-gradient(ellipse 900px 420px at 50% 104%, rgba(255, 170, 80, .26), transparent 70%),
+      linear-gradient(180deg, #1b1524 0%, #15111c 55%, #1a1320 100%);
+  }
+  .stars i { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fff3d6; opacity: .5; }
+
+  /* top bar */
+  .top { position: absolute; left: 72px; right: 72px; top: 60px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: 'Fraunces Variable', serif; font-weight: 700; font-size: 34px; letter-spacing: -0.01em; }
+  .ver { margin-left: 4px; height: 34px; padding: 0 14px; border-radius: 99px; display: inline-flex; align-items: center; font-family: 'Nunito Variable', sans-serif;
+    font-size: 18px; font-weight: 900; color: #1b1524; background: linear-gradient(135deg, #ffd27a, #f4743b); }
+  .when { display: inline-flex; align-items: center; gap: 12px; height: 46px; padding: 0 20px; border-radius: 99px; font-weight: 800; font-size: 20px;
+    color: #ffc7a8; background: rgba(255, 129, 80, .14); border: 1px solid rgba(255, 150, 100, .25); }
+  .when s { text-decoration: none; opacity: .7; }
+
+  h1 { position: absolute; left: 72px; right: 72px; top: 146px; margin: 0; font-family: 'Fraunces Variable', serif; font-weight: 650;
+    font-size: 86px; line-height: 1.02; letter-spacing: -0.025em; font-variation-settings: 'SOFT' 100; }
+  h1 em { font-style: italic; font-weight: 600; background: linear-gradient(100deg, #ffd27a 0%, #ff9a4d 45%, #ec5a3c 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: 8px; }
+  .lead { position: absolute; left: 74px; right: 60px; top: 338px; margin: 0; font-size: 28px; line-height: 1.45; font-weight: 650; color: #d9cfdc; }
+  .lead b { color: #fff; font-weight: 850; }
+
+  /* the app */
+  .win { position: absolute; left: 66px; top: 572px; width: 820px; border-radius: 20px; overflow: hidden; transform: rotate(-2.2deg);
+    box-shadow: 0 50px 110px -30px rgba(0, 0, 0, .85), 0 0 0 1px rgba(255, 255, 255, .1); background: #fbf6ee; }
+  .bar { height: 30px; background: #efe6d8; display: flex; align-items: center; justify-content: flex-end; gap: 22px; padding-right: 16px; font-size: 13px; color: #6b6070; }
+  .win img { display: block; width: 100%; }
+  .gift { position: absolute; right: 50px; top: 610px; width: 318px; border-radius: 22px; overflow: hidden; transform: rotate(4deg);
+    box-shadow: 0 40px 90px -24px rgba(0, 0, 0, .9), 0 0 0 1px rgba(255, 255, 255, .14), 0 0 80px -10px rgba(255, 170, 80, .35); }
+  .gift img { display: block; width: 100%; }
+
+  /* facts */
+  .facts { position: absolute; left: 72px; right: 72px; top: 448px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; z-index: 3; }
+  .fact { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .12); }
+  .fact b { flex: none; font-family: 'Fraunces Variable', serif; font-weight: 650; font-size: 40px; line-height: 1; letter-spacing: -0.02em; }
+  .fact span { font-size: 16.5px; font-weight: 800; color: #d4c8da; line-height: 1.22; }
+  .f1 b { color: #ffb36b; } .f2 b { color: #ffd27a; } .f3 b { color: #8fd6c4; } .f4 b { color: #c3a8ff; }
+
+  /* the cast */
+  .cast { position: absolute; left: -40px; right: -40px; bottom: 74px; height: 260px; z-index: 2; }
+  .hill { position: absolute; left: -60px; right: -60px; bottom: -150px; height: 260px; border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 20%, rgba(255, 190, 110, .32), rgba(255, 150, 80, .08) 60%, transparent 75%); }
+  .hero { position: absolute; bottom: 0; }
+  .hero svg { display: block; overflow: visible; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .35)); }
+
+  .foot { position: absolute; left: 72px; right: 72px; bottom: 26px; display: flex; align-items: center; justify-content: space-between; z-index: 4;
+    font-weight: 800; font-size: 21px; color: #b5a8bd; }
+  .foot .gh { display: inline-flex; align-items: center; gap: 10px; color: #f1e7dc; }
+  .sig { font-family: 'Caveat', cursive; font-weight: 700; font-size: 44px; color: #f6e9dc; transform: rotate(-3deg); line-height: 1; }
+</style>
+</head>
+<body>
+<div class="art">
+  <div class="stars">__STARS__</div>
+
+  <div class="top">
+    <div class="brand">__LOGO__ Emberwise <span class="ver">1.1</span></div>
+    <div class="when">Mayıs 2025 <s>→</s> Ekim 2026</div>
+  </div>
+
+  <h1>Rafa kaldırdığım<br>projemi <em>bitirdim.</em></h1>
+  <p class="lead">Görevleri maceraya, odağı XP'ye çeviren bir odak oyunu.<br><b>Ücretsiz · Windows & Mac · İnternetsiz</b></p>
+
+  <div class="win"><div class="bar"><span>—</span><span>☐</span><span>✕</span></div><img src="out/shots/today.png"></div>
+  <div class="gift"><img src="out/shots/gift-card.png"></div>
+
+  <div class="facts">
+    <div class="fact f1"><b>365</b><span>günlük<br>ödül yolu</span></div>
+    <div class="fact f2"><b>19</b><span>karakter ve<br>aksesuarlar</span></div>
+    <div class="fact f3"><b>13</b><span>gerçek<br>ortam sesi</span></div>
+    <div class="fact f4"><b>400</b><span>hayata<br>dair söz</span></div>
+  </div>
+
+  <div class="cast">
+    <div class="hill"></div>
+    __CAST__
+  </div>
+
+  <div class="foot">
+    <span class="gh">__GITHUB__ github.com/anilg12/Emberwise</span>
+    <span class="sig">Anıl Gül</span>
+  </div>
+</div>
+</body>
+</html>
