@@ -136,7 +136,7 @@ Ayarlar'dan yedek alıp geri yükleyebilirsin.
 
 - **Login rewards:** a daily gift on a seven-day cycle, a weekly chest, a monthly treasure and a reward path that runs a whole year. Along the way there are **15 exclusive pieces you can only earn by coming back**, including five characters such as the winged *Ember Sovereign* on day 365. Taking a break never resets your progress.
 - **19 characters** (wizard, knight, ranger, bard, scientist, chef, gardener, painter, explorer, coder, pirate, detective, ninja, astronaut and five login-only heroes), each with **four outfit tones**, plus accessories (glasses, headphones, bow tie, earrings, backpack…), new hats, companions and realms, all hand-drawn to fit every character.
-- **Ambience mixer:** 11 real field recordings from Wikimedia Commons (rain, distant storm, waves, wind, forest, stream, night, café, library, fireplace, train), softened and seamlessly looped, plus two soft noises. Layer them freely or pick a blend such as *Rainy café* or *Night train*.
+- **Ambience mixer:** 11 real field recordings from Wikimedia Commons (rain, distant storm, waves, wind, forest, stream, night, café, library, fireplace, train), softened and looped, plus two soft noises. Layer them freely or pick a blend such as *Rainy café* or *Night train*.
 - **Words for the road:** close to 400 original lines in Turkish and English about life, meaning, kindness and small joys, not just work. They're personalised and fit the moment, with a line of the day and a place to keep your favourites.
 - A mood and gratitude journal, a breathing exercise for breaks, a daily focus goal and five new achievements.
 
