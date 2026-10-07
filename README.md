@@ -200,7 +200,7 @@ tests/             unit tests
   <img src="docs/media/signature-light.svg" alt="Tasarlayan ve geliştiren: Anıl Gül" width="360">
 </picture>
 
-[LinkedIn](https://www.linkedin.com/in/an%C4%B1l-g%C3%BCl-753417249) · [Odak Menajeri RPG](https://github.com/anilg12/Odak-Menajeri-RPG) · [GitHub](https://github.com/anilg12)
+[LinkedIn](https://www.linkedin.com/in/anilg12/) · [Odak Menajeri RPG](https://github.com/anilg12/Odak-Menajeri-RPG) · [GitHub](https://github.com/anilg12)
 
 <sub>MIT License © 2026 Anıl Gül · Ambience recordings keep their own licenses (see CREDITS)</sub>
 

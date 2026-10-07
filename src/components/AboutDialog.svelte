@@ -9,7 +9,7 @@
   import Signature from './Signature.svelte';
   import Ember from './Ember.svelte';
 
-  const LINKEDIN = 'https://www.linkedin.com/in/an%C4%B1l-g%C3%BCl-753417249';
+  const LINKEDIN = 'https://www.linkedin.com/in/anilg12/';
   const GITHUB = 'https://github.com/anilg12/Emberwise';
 
   let showCredits = $state(false);
