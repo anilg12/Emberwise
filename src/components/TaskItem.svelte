@@ -26,7 +26,7 @@
     return now.getHours() * 60 + now.getMinutes() >= h * 60 + m;
   });
   const subs = $derived.by(() => {
-    // Repeating quests show fresh steps each day.
+    // repeating tasks get fresh subtasks every day
     if (task.repeat !== 'none' && task.subtasksDay !== store.today) return task.subtasks.map((s) => ({ ...s, done: false }));
     return task.subtasks;
   });

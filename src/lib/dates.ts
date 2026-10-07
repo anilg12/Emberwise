@@ -1,4 +1,4 @@
-// Local-time date helpers. A "day key" is always YYYY-MM-DD in the user's local time zone.
+// date helpers. "day key" = YYYY-MM-DD in local time
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -17,7 +17,7 @@ export function addDays(key: string, n: number): string {
   return dayKey(d);
 }
 
-/** Whole calendar days from a to b (b - a). DST-safe because we round. */
+// calendar days from a to b (b - a), rounded so DST doesn't break it
 export function diffDays(a: string, b: string): number {
   return Math.round((parseDayKey(b).getTime() - parseDayKey(a).getTime()) / 86_400_000);
 }

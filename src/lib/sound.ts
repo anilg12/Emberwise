@@ -1,4 +1,4 @@
-// Effect sounds are synthesized on the fly — no audio files, fully offline. (Ambience lives in ambience.ts.)
+// ui sounds are generated with web audio, no files. ambience is in ambience.ts
 
 let ctx: AudioContext | null = null;
 let sfxBus: GainNode | null = null;
@@ -12,7 +12,7 @@ export function audioContext(): AudioContext | null {
     ctx = new Ctor({ latencyHint: 'interactive' });
     sfxBus = ctx.createGain();
     sfxBus.gain.value = volume;
-    // A gentle compressor keeps stacked sounds from clipping.
+    // compressor so overlapping sounds don't clip
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -14;
     comp.ratio.value = 4;
@@ -56,7 +56,7 @@ function tone(freq: number, at: number, opts: ToneOpts = {}) {
   osc.stop(t0 + attack + decay + 0.05);
 }
 
-/** A soft bell: a few inharmonic partials with long, natural decay. */
+// bell: a few inharmonic partials with a long decay
 function bell(freq: number, at: number, gain = 0.16, length = 1.6) {
   const partials: [number, number][] = [
     [1, 1],
@@ -88,7 +88,7 @@ function play(fn: () => void) {
   try {
     fn();
   } catch {
-    /* audio is a nicety, never a failure */
+    /* no audio is fine */
   }
 }
 

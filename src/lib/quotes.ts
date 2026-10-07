@@ -1,6 +1,6 @@
-// Words for the road: original lines written for Emberwise, in Turkish and English.
-// Each entry is [tr, en]; ids are "<tag>:<index>", so keep the order stable and add new lines at the end.
-// {name} becomes the hero's name (and disappears gracefully when there is none).
+// quotes, [tr, en]
+// id is "<tag>:<index>" so don't reorder, only append
+// {name} = hero name (dropped if there isn't one)
 
 export type QuoteTag =
   | 'life'

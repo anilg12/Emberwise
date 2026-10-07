@@ -34,7 +34,7 @@
       close();
     }
   }
-  // A fresh line for every celebration.
+  // new line every time
   const words = $derived(current ? pickQuote('level', store.data.profile.name, false).text : '');
 </script>
 

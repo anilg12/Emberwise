@@ -5,12 +5,12 @@ export function reduced(): boolean {
   return typeof document !== 'undefined' && document.documentElement.classList.contains('reduce-motion');
 }
 
-/** Duration helper: collapses to 0 when the user prefers reduced motion. */
+// 0 when reduced motion is on
 export function d(ms: number): number {
   return reduced() ? 0 : ms;
 }
 
-/** Soft rise + fade, the default entrance for cards and pages. */
+// fade + small rise, default for cards/pages
 export function rise(_node: Element, { y = 10, duration = 280, delay = 0 } = {}): TransitionConfig {
   if (reduced()) return { duration: 0 };
   return {
@@ -21,7 +21,7 @@ export function rise(_node: Element, { y = 10, duration = 280, delay = 0 } = {})
   };
 }
 
-/** Springy pop used for badges and celebratory things. */
+// springy pop for badges etc
 export function pop(_node: Element, { duration = 380, delay = 0, from = 0.6 } = {}): TransitionConfig {
   if (reduced()) return { duration: 0 };
   return {
@@ -32,7 +32,7 @@ export function pop(_node: Element, { duration = 380, delay = 0, from = 0.6 } = 
   };
 }
 
-/** Panel entrance for dialogs. */
+// dialogs
 export function panel(_node: Element, { duration = 300 } = {}): TransitionConfig {
   if (reduced()) return { duration: 0 };
   return {
@@ -42,7 +42,7 @@ export function panel(_node: Element, { duration = 300 } = {}): TransitionConfig
   };
 }
 
-/** Collapses height smoothly (lists, expanders). */
+// height collapse for lists/expanders
 export function collapse(node: Element, { duration = 240 } = {}): TransitionConfig {
   if (reduced()) return { duration: 0 };
   const style = getComputedStyle(node);

@@ -1,7 +1,7 @@
-﻿// Generates every icon Emberwise ships with, from hand-written SVG:
-//   build/icon.png (1024, macOS grid), build/icon.icns, build/icon.ico,
-//   electron/assets/icon.png, tray icons, and the DMG background.
-// Run: node scripts/make-icons.mjs
+﻿// generates all the app icons from the svg below:
+// build/icon.png (1024, mac grid), icon.icns, icon.ico, electron/assets/icon.png,
+// tray icons and the dmg background
+// node scripts/make-icons.mjs
 
 import sharp from 'sharp';
 import pngToIco from 'png-to-ico';
@@ -22,14 +22,11 @@ const FLAME_INNER =
 const spark = (x, y, r, fill, op = 1) =>
   `<path d="M${x} ${y - r} C${x + r * 0.16} ${y - r * 0.16} ${x + r * 0.16} ${y - r * 0.16} ${x + r} ${y} C${x + r * 0.16} ${y + r * 0.16} ${x + r * 0.16} ${y + r * 0.16} ${x} ${y + r} C${x - r * 0.16} ${y + r * 0.16} ${x - r * 0.16} ${y + r * 0.16} ${x - r} ${y} C${x - r * 0.16} ${y - r * 0.16} ${x - r * 0.16} ${y - r * 0.16} ${x} ${y - r}Z" fill="${fill}" opacity="${op}"/>`;
 
-/**
- * The app icon. `inset` is the tile margin (macOS grid uses 100/1024), `detail`
- * switches off the finer touches for tiny sizes.
- */
+// app icon. inset = tile margin (mac grid is 100/1024), detail=false drops the small bits for tiny sizes
 function iconSvg({ inset = 100, radius = 186, detail = true, shadow = true } = {}) {
   const s = 1024;
   const tile = s - inset * 2;
-  // Flame occupies ~60% of the tile, sitting slightly low like a hearth fire.
+  // flame is ~60% of the tile, sits a bit low
   const fh = tile * (detail ? 0.64 : 0.74);
   const scale = fh / 104;
   const fx = s / 2 - 50 * scale;
@@ -106,7 +103,7 @@ function iconSvg({ inset = 100, radius = 186, detail = true, shadow = true } = {
 </svg>`;
 }
 
-/** Flame alone (tray, menu bar). `mono` produces a macOS template image (black + alpha). */
+// just the flame (tray / menu bar). mono -> mac template image (black + alpha)
 function flameSvg(size, { mono = false } = {}) {
   const pad = size * 0.06;
   const h = size - pad * 2;
@@ -137,7 +134,7 @@ async function png(svg, size) {
     .toBuffer();
 }
 
-/** macOS template: black where the flame is, with the inner flame knocked out. */
+// mac template: black flame, inner flame cut out
 async function templatePng(size) {
   const raw = await sharp(Buffer.from(flameSvg(size, { mono: true })))
     .resize(size, size)
@@ -148,7 +145,7 @@ async function templatePng(size) {
   for (let i = 0; i < data.length; i += 4) {
     const lum = (data[i] + data[i + 1] + data[i + 2]) / 3;
     const a = data[i + 3];
-    // White (inner flame) becomes transparent, black stays opaque.
+    // white -> transparent, black stays
     const alpha = Math.round(a * (1 - lum / 255));
     data[i] = 0;
     data[i + 1] = 0;
@@ -207,7 +204,7 @@ async function main() {
   writeFileSync(join(BUILD, 'icon.svg'), mac);
   writeFileSync(join(BUILD, 'icon-full.svg'), full);
 
-  // macOS
+  // mac
   const macPng = await png(mac, 1024);
   writeFileSync(join(BUILD, 'icon.png'), macPng);
   const sizes = { 16: null, 32: null, 64: null, 128: null, 256: null, 512: null, 1024: null };
@@ -229,28 +226,28 @@ async function main() {
     ]),
   );
 
-  // Windows .ico: crisp small sizes use the simplified art.
+  // windows .ico, small sizes use the simple version
   const icoSizes = [16, 20, 24, 32, 40, 48, 64, 128, 256];
   const icoPngs = [];
   for (const sz of icoSizes) icoPngs.push(await png(sz <= 48 ? small : full, sz));
   writeFileSync(join(BUILD, 'icon.ico'), await pngToIco(icoPngs));
   writeFileSync(join(BUILD, 'icon-256.png'), await png(full, 256));
 
-  // Window icon (Windows/Linux) used at runtime
+  // runtime window icon (win/linux)
   writeFileSync(join(ASSETS, 'icon.png'), await png(full, 256));
 
-  // Tray / menu bar
+  // tray
   writeFileSync(join(ASSETS, 'tray.png'), await png(flameSvg(64), 16));
   writeFileSync(join(ASSETS, 'tray@1.5x.png'), await png(flameSvg(64), 24));
   writeFileSync(join(ASSETS, 'tray@2x.png'), await png(flameSvg(64), 32));
   writeFileSync(join(ASSETS, 'trayTemplate.png'), await templatePng(18));
   writeFileSync(join(ASSETS, 'trayTemplate@2x.png'), await templatePng(36));
 
-  // DMG background (1x + 2x)
+  // dmg background 1x/2x
   writeFileSync(join(BUILD, 'dmg-background.png'), await sharp(Buffer.from(dmgSvg(1))).png().toBuffer());
   writeFileSync(join(BUILD, 'dmg-background@2x.png'), await sharp(Buffer.from(dmgSvg(2))).png().toBuffer());
 
-  // Preview sheet for eyeballing
+  // preview sheet to eyeball everything
   const sheet = await sharp({ create: { width: 1200, height: 340, channels: 4, background: '#f4ece0' } })
     .composite([
       { input: await png(mac, 300), left: 20, top: 20 },

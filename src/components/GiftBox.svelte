@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A small wrapped present. `open` lifts the lid and lets the light out.
+  // gift box, open=true lifts the lid
   let { size = 120, open = false, tone = 'ember' }: { size?: number; open?: boolean; tone?: 'ember' | 'gold' | 'violet' } = $props();
   const PAL = {
     ember: { box: '#f4743b', dark: '#d65a2c', ribbon: '#ffd27a' },

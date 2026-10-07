@@ -1,4 +1,4 @@
-// Transient UI feedback: toasts, floating "+XP" numbers and full-screen celebrations.
+// toasts, floating +XP numbers, celebrations
 
 export type ToastKind = 'info' | 'success' | 'xp' | 'gold' | 'achievement' | 'reminder' | 'warn';
 
@@ -42,7 +42,7 @@ class Fx {
   celebrations = $state<Celebration[]>([]);
   whisper = $state<Whisper | null>(null);
   private whisperTimer: ReturnType<typeof setTimeout> | null = null;
-  /** Last pointer position, used to anchor floaters to where the user clicked. */
+  // last pointer position, floaters spawn there
   pointer = { x: 0, y: 0 };
 
   toast(t: Omit<Toast, 'id' | 'duration'> & { duration?: number }) {
@@ -72,7 +72,7 @@ class Fx {
   }
 
   celebrate(c: Omit<Celebration, 'id'>) {
-    // Only keep the most recent level-up; several at once collapse into one.
+    // several level ups at once -> only show the last one
     this.celebrations = [{ ...c, id: seq++ }];
   }
 
@@ -80,7 +80,7 @@ class Fx {
     this.celebrations = [];
   }
 
-  /** A short line from the ember spirit, shown in a corner bubble. */
+  // ember speech bubble in the corner
   say(text: string, quoteId: string, mood: Whisper['mood'] = 'happy', duration = 7000) {
     this.whisper = { id: seq++, text, quoteId, mood };
     if (this.whisperTimer) clearTimeout(this.whisperTimer);
@@ -92,7 +92,7 @@ class Fx {
     this.whisper = null;
   }
 
-  /** Keeps a whisper on screen while the pointer rests on it. */
+  // don't auto-hide while hovered
   hold(on: boolean) {
     if (this.whisperTimer) clearTimeout(this.whisperTimer);
     if (!on && this.whisper) this.whisperTimer = setTimeout(() => (this.whisper = null), 3500);

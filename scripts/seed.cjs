@@ -1,5 +1,5 @@
 'use strict';
-// Builds a realistic, lived-in Emberwise profile for screenshots and manual QA.
+// seeds a profile with some history, for screenshots and manual testing
 
 function pad(n) {
   return String(n).padStart(2, '0');
@@ -53,7 +53,7 @@ function seed(opts = {}) {
       log.push({ id: id(), t: end.toISOString(), kind: 'focus', xp: minutes * 2 + 10, gold: Math.floor(minutes / 5), ref: `focus:${sid}`, meta: { m: minutes, full: 1 } });
     }
   }
-  // Today so far
+  // today
   const t1 = new Date();
   t1.setHours(Math.max(0, t1.getHours() - 2), 10, 0, 0);
   const sid = id();
@@ -101,7 +101,7 @@ function seed(opts = {}) {
     T(tr ? 'Eski görev — dün kaldı' : 'Leftover from yesterday', { categoryId: 'cat_work', date: dayKey(daysAgo(1)), difficulty: 'easy' }),
   ];
 
-  // 31 visit days over the last six weeks, today included, today's gift already opened.
+  // 31 login days in the last 6 weeks incl. today, today's gift already opened
   const loginDays = [];
   for (let i = 42; i >= 0; i--) if (i === 0 || i % 4 !== 1) loginDays.push(dayKey(daysAgo(i)));
   const journal = {};

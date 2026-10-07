@@ -1,6 +1,6 @@
 'use strict';
-// Screenshot harness: launches the real Electron app with a seeded profile and captures every page.
-// Usage: npx electron scripts/shots.cjs --theme=dark --lang=tr --out=shots [--onboarding] [--only=today,focus]
+// screenshots every page of the app with a seeded profile
+// npx electron scripts/shots.cjs --theme=dark --lang=tr --out=shots [--onboarding] [--only=today,focus]
 
 const fs = require('node:fs');
 const os = require('node:os');
@@ -57,7 +57,7 @@ async function run(win) {
   win.setContentSize(width, height);
   win.center();
   if (!onboarding && !warmed && !flag('nowarm')) {
-    // First load unlocks achievements for the seeded history; let that settle, then reload clean.
+    // first load unlocks achievements for the seeded data, wait for that and reload
     warmed = true;
     await wait(16000);
     win.webContents.once('did-finish-load', () => run(win).catch((err) => {

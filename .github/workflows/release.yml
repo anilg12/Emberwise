@@ -1,8 +1,7 @@
 name: Build & Release
 
-# Builds the Windows installer and the macOS (Apple Silicon + Intel) disk images.
-# Push a tag like v1.0.0 to publish a GitHub Release with all files attached,
-# or run it manually from the Actions tab to just get the build artifacts.
+# windows installer + mac dmgs (arm64 and x64)
+# push a v* tag to publish a release, or run it by hand from Actions to just get the artifacts
 
 on:
   push:

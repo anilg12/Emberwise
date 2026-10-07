@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Development only (open /#gallery): every outfit, tone, accessory, hat, companion and realm side by side.
+  // dev only (/#gallery): all outfits, tones, accessories, hats, pets and realms on one page
   import { CHARACTERS } from '../lib/characters';
   import { SHOP } from '../lib/catalog';
   import type { Look } from '../lib/types';

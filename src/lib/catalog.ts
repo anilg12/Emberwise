@@ -2,9 +2,7 @@ import type { Data, LogEntry } from './types';
 import { addDays, dayKeyOfIso } from './dates';
 import { seeded } from './game';
 
-/* ------------------------------------------------------------------ */
-/* Shop                                                                */
-/* ------------------------------------------------------------------ */
+// --- shop ---
 
 export type Slot = 'char' | 'hat' | 'acc' | 'pet' | 'bg' | 'consumable';
 export type WearSlot = 'hat' | 'acc' | 'pet' | 'bg';
@@ -14,7 +12,7 @@ export interface ShopItem {
   slot: Slot;
   price: number;
   minLevel?: number;
-  /** Exclusive: never sold, earned on the login path after this many days. */
+  /** login path only, unlocked after this many days (not sold) */
   login?: number;
 }
 
@@ -73,7 +71,7 @@ export const SHOP: ShopItem[] = [
 
   { id: 'shield', slot: 'consumable', price: 80 },
 
-  // Login path exclusives: they can only be earned by coming back, day after day.
+  // login path exclusives, not in the shop
   { id: 'acc_ember_pin', slot: 'acc', price: 0, login: 2 },
   { id: 'hat_sprout', slot: 'hat', price: 0, login: 5 },
   { id: 'char_guardian', slot: 'char', price: 0, login: 7 },
@@ -91,7 +89,7 @@ export const SHOP: ShopItem[] = [
   { id: 'char_sovereign', slot: 'char', price: 0, login: 365 },
 ];
 
-/** Items you can buy (exclusives are earned, not sold). */
+// buyable items (no exclusives)
 export const FOR_SALE = SHOP.filter((i) => !i.login);
 
 export const MAX_SHIELDS = 3;
@@ -100,9 +98,7 @@ export function shopItem(id: string | null | undefined): ShopItem | undefined {
   return id ? SHOP.find((i) => i.id === id) : undefined;
 }
 
-/* ------------------------------------------------------------------ */
-/* Login rewards                                                       */
-/* ------------------------------------------------------------------ */
+// --- login rewards ---
 
 export interface PathStep {
   day: number;
@@ -112,7 +108,7 @@ export interface PathStep {
   item?: string;
 }
 
-/** The long road: one stop for the first week, then each week, month and season up to a full year. */
+// reward path: first week, then weekly, monthly, seasonal up to a year
 export const LOGIN_PATH: PathStep[] = [
   { day: 1, gold: 40 },
   { day: 2, item: 'acc_ember_pin' },
@@ -135,7 +131,7 @@ export const LOGIN_PATH: PathStep[] = [
   { day: 365, item: 'char_sovereign', gold: 1000 },
 ];
 
-/** A seven-day cycle of small daily gifts; the seventh is a little treasure. */
+// 7 day gift cycle, day 7 is the big one
 export const DAILY_GIFTS: { gold: number; xp: number }[] = [
   { gold: 20, xp: 0 },
   { gold: 0, xp: 30 },
@@ -154,9 +150,7 @@ export function giftForDay(total: number) {
   return { index, ...DAILY_GIFTS[index] };
 }
 
-/* ------------------------------------------------------------------ */
-/* Daily quests                                                        */
-/* ------------------------------------------------------------------ */
+// --- daily quests ---
 
 export interface DayFacts {
   tasks: number;
@@ -195,7 +189,7 @@ export const QUEST_POOL: QuestDef[] = [
 
 export const CHEST_REWARD = { xp: 60, gold: 30 };
 
-/** Three quests per day, deterministic per date, always one task, one focus and one "flavour" quest. */
+// 3 quests a day, same for the whole date: one task, one focus, one "flavour" quest
 export function questsForDay(day: string): QuestDef[] {
   const rnd = seeded(`ember-${day}`);
   const pick = <T,>(arr: T[]) => arr[Math.floor(rnd() * arr.length)];
@@ -223,7 +217,7 @@ export function factsForDay(data: Data, day: string): DayFacts {
     const e = data.log[i];
     const k = dayKeyOfIso(e.t);
     if (k !== day) {
-      // The log is chronological; once we are two days back we can stop.
+      // log is in order, can stop once we're 2 days back
       if (k < stopBefore) break;
       continue;
     }
@@ -247,9 +241,7 @@ export function factsForDay(data: Data, day: string): DayFacts {
   return f;
 }
 
-/* ------------------------------------------------------------------ */
-/* Achievements                                                        */
-/* ------------------------------------------------------------------ */
+// --- achievements ---
 
 export interface AchievementCtx {
   tasksDone: number;
@@ -277,7 +269,7 @@ export interface AchievementDef {
   icon: string;
   xp: number;
   gold: number;
-  /** Returns [current, target] so locked badges can show progress. */
+  /** [current, target] for the progress on locked badges */
   progress: (c: AchievementCtx) => [number, number];
 }
 

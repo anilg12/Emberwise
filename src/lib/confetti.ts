@@ -1,4 +1,4 @@
-// A tiny confetti burst on a throw-away canvas. Runs for ~2 seconds, then cleans itself up.
+// small confetti burst on a temp canvas, ~2s and then it removes itself
 
 const COLORS = ['#f0743e', '#f6a43a', '#ffd166', '#3e9b6e', '#4a78c2', '#d0567c', '#8a6bd1'];
 

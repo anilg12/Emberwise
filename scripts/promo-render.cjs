@@ -1,8 +1,8 @@
 'use strict';
-// Renders promo/slides.html into LinkedIn-ready files:
-//   promo/out/slide-1..8.png (1080×1350), promo/out/linkedin-gorsel.png (single image)
-//   promo/out/Emberwise-LinkedIn.pdf (swipeable document post)
-// Usage: npx electron scripts/promo-render.cjs   (run scripts/promo-shots.cjs first)
+// renders promo/slides.html for linkedin:
+//   promo/out/slide-1..8.png (1080x1350), promo/out/linkedin-gorsel.png
+//   promo/out/Emberwise-LinkedIn.pdf (carousel post)
+// npx electron scripts/promo-render.cjs   (run promo-shots.cjs first)
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -58,7 +58,7 @@ function logo(size = 44) {
     <circle cx="27.6" cy="46" r="2" fill="#4a2320"/><circle cx="36.4" cy="46" r="2" fill="#4a2320"/></svg>`;
 }
 
-// A still version of the animated rank ladder from the README.
+// static version of the rank ladder from the readme
 const ranks = fs
   .readFileSync(path.join(root, 'docs', 'media', 'ranks-light.svg'), 'utf8')
   .replace(/<style>[\s\S]*?<\/style>/, '')

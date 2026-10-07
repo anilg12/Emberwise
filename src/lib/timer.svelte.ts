@@ -1,5 +1,5 @@
-// The focus timer. Time is always derived from wall-clock timestamps, so it stays exact
-// through sleep, throttling, minimised windows and even app restarts.
+// focus timer. everything is computed from timestamps so sleep, throttling,
+// a minimized window or restarting the app don't throw it off
 
 import { store } from './state.svelte';
 import { fx } from './fx.svelte';
@@ -40,7 +40,7 @@ class FocusTimer {
     return Math.max(1, min) * 60_000;
   }
 
-  /** Re-sync the idle duration when settings change. */
+  // settings changed -> update idle duration
   syncIdleDuration() {
     if (this.status !== 'idle') return;
     this.totalMs = this.durationFor(this.phase);
@@ -121,7 +121,7 @@ class FocusTimer {
     this.publish();
   }
 
-  /** Called when the app wakes from sleep or becomes visible again. */
+  // after sleep / when the window is visible again
   wake() {
     this.tick();
     this.schedule();
@@ -170,7 +170,7 @@ class FocusTimer {
     this.save();
   }
 
-  /** Finish a focus session early. Partial focus still counts (≥ 5 minutes earns XP). */
+  // end early, still gives xp if >= 5 min
   finishEarly(): { xp: number; gold: number } | null {
     if (this.status === 'idle') return null;
     this.clearHandle();
@@ -258,7 +258,7 @@ class FocusTimer {
     if ((next !== 'focus' && s.autoBreak) || (next === 'focus' && s.autoFocus)) this.start();
   }
 
-  /** Mirror the timer to the tray / menu bar, the taskbar progress and the always-on-top pin. */
+  // show the timer in the tray/menu bar, taskbar progress and the always-on-top pin
   publish() {
     const running = this.status === 'running';
     const active = this.status !== 'idle';

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The maker's mark. Written by hand, underlined with a little flourish.
+  // signature, handwritten font + underline
   let { size = 46, caption = '' }: { size?: number; caption?: string } = $props();
 </script>
 

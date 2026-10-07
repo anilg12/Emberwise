@@ -59,11 +59,10 @@ import { fx } from './fx.svelte';
 import { sfx } from './sound';
 import { pickQuote } from './motivation';
 
-/* ------------------------------------------------------------------ */
-/* Defaults & normalisation                                            */
-/* ------------------------------------------------------------------ */
+// --- defaults / normalize ---
 
-/** Categorical identity colors, in a CVD-validated order (light steps; see DARK_STEP for dark mode). */
+// category colors, ordered so they stay distinguishable for color blind users
+// (light values, DARK_STEP for dark mode)
 export const CATEGORY_COLORS = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
 const DARK_STEP: Record<string, string> = {
   '#2a78d6': '#3987e5',
@@ -76,7 +75,7 @@ const DARK_STEP: Record<string, string> = {
   '#e34948': '#e66767',
 };
 
-/** The same identity hue, stepped for the current surface. */
+// same hue, adjusted for the current theme
 export function categoryColor(color: string, dark: boolean): string {
   return dark ? (DARK_STEP[color.toLowerCase()] ?? color) : color;
 }
@@ -114,7 +113,7 @@ export function defaultSettings(lang: Lang = detectLang()): Settings {
     ambientVolume: 0.55,
     motivation: true,
     dailyGoal: 60,
-    // Reminders only ring while Emberwise runs, so closing keeps it in the tray by default.
+    // reminders only work while the app runs, so closing goes to tray by default
     closeToTray: true,
     openAtLogin: false,
     pinWhileFocus: false,
@@ -149,7 +148,7 @@ export function createDefault(lang?: Lang): Data {
   };
 }
 
-/** Old builds stored a single ambience name; newer ones a whole mix. */
+// old versions saved a single ambience name, now it's a mix
 function normalizeMix(v: unknown, fallback: AmbientMix): AmbientMix {
   if (typeof v === 'string') return v === 'off' ? {} : AMBIENT_KINDS.includes(v as never) ? { [v]: 0.7 } : fallback;
   if (!isObj(v)) return fallback;
@@ -184,7 +183,7 @@ function normalizeJournal(v: unknown): Record<string, JournalEntry> {
   return out;
 }
 
-/** Monday of the week a day belongs to. */
+// monday of that week
 export function weekStart(day: string): string {
   return addDays(day, -((weekday(day) + 6) % 7));
 }
@@ -374,9 +373,7 @@ export function normalizeData(raw: unknown): Data {
   };
 }
 
-/* ------------------------------------------------------------------ */
-/* Task scheduling helpers                                             */
-/* ------------------------------------------------------------------ */
+// --- task scheduling ---
 
 export function isScheduledOn(task: Task, day: string): boolean {
   if (task.repeat === 'none') return false;
@@ -392,7 +389,7 @@ export function isDoneOn(task: Task, day: string): boolean {
   return task.doneDays.includes(day);
 }
 
-/** Overdue first, then by reminder time, then oldest first. */
+// overdue, then by reminder time, then oldest
 export function compareOpen(a: Task, b: Task, day: string): number {
   const oa = a.repeat === 'none' && a.date && a.date < day ? 0 : 1;
   const ob = b.repeat === 'none' && b.date && b.date < day ? 0 : 1;
@@ -408,9 +405,7 @@ export function categoryName(c: Category | undefined | null): string {
   return c.name.trim() || (c.key ? t(`categories.${c.key}`) : '');
 }
 
-/* ------------------------------------------------------------------ */
-/* Store                                                               */
-/* ------------------------------------------------------------------ */
+// --- store ---
 
 export interface EditorState {
   open: boolean;
@@ -432,7 +427,7 @@ class Store {
   systemReducedMotion = $state(false);
   editor = $state<EditorState>({ open: false, taskId: null, preset: null });
   focusTaskRequest = $state<string | null>(null);
-  /** Ambience playing outside a focus session ("just listen"). */
+  // "just listen" (ambience without a focus session)
   listening = $state(false);
   aboutOpen = $state(false);
   giftOpen = $state(false);
@@ -466,7 +461,7 @@ class Store {
       return { def: q, value, done: value >= q.target, claimed: claimed.includes(q.id) };
     });
   });
-  /** Everything that belongs to today: open quests (overdue first, then by time) and what's already done. */
+  // today's open tasks (overdue first, then by time) + the done ones
   todayTasks = $derived.by(() => {
     const day = this.today;
     const open: Task[] = [];
@@ -497,7 +492,7 @@ class Store {
     const count = this.data.login.days.filter((d) => d.startsWith(key)).length;
     return { key: `month:${key}`, count, ready: count >= MONTH_CHEST.days, claimed: this.data.login.claimed.includes(`month:${key}`) };
   });
-  /** Login path stops that are reached but not yet collected. */
+  // reached but not collected path stops
   pathReady = $derived(LOGIN_PATH.filter((p) => p.day <= this.data.login.total && !this.data.login.claimed.includes(`path:${p.day}`)));
   rewardsWaiting = $derived(
     (this.giftClaimed || this.data.login.lastDay !== this.today ? 0 : 1) +
@@ -517,7 +512,7 @@ class Store {
   onReminder: ((e: ReminderEvent) => void) | null = null;
   onGoal: (() => void) | null = null;
 
-  /* ---------------- lifecycle ---------------- */
+  // lifecycle
 
   async init() {
     let text: string | null = null;
@@ -571,7 +566,7 @@ class Store {
     saveTextSync(this.serialize());
   }
 
-  /** Called periodically: keeps the clock fresh and handles the day changing at midnight. */
+  // runs on an interval, updates the clock and handles the day change at midnight
   tick() {
     this.clock = Date.now();
     const d = dayKey();
@@ -584,9 +579,9 @@ class Store {
     this.touchLogin();
   }
 
-  /* ---------------- daily login ---------------- */
+  // daily login
 
-  /** Counts today as a login day — only while the window is actually in front of the user. */
+  // count today as a login day, only if the window is actually visible
   touchLogin(): boolean {
     if (!this.data.onboarded) return false;
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return false;
@@ -644,13 +639,13 @@ class Store {
     return { gold, xp, item: step.item, shields: step.shields };
   }
 
-  /** Daily gift claims only matter for a while; path, week and month keys stay. */
+  // old daily gift claims can go, keep path/week/month
   private trimClaims() {
     const cutoff = `gift:${addDays(this.today, -60)}`;
     this.data.login.claimed = this.data.login.claimed.filter((k) => !k.startsWith('gift:') || k >= cutoff);
   }
 
-  /* ---------------- journal & small rituals ---------------- */
+  // journal, mood etc
 
   setMood(mood: number): boolean {
     const day = this.today;
@@ -698,7 +693,7 @@ class Store {
     this.persist();
   }
 
-  /* ---------------- rewards ---------------- */
+  // rewards
 
   private reward(entry: Omit<LogEntry, 'id' | 't'> & { t?: string }) {
     const before = this.lvl.level;
@@ -762,7 +757,7 @@ class Store {
     for (const k of Object.keys(this.data.claimed)) if (k < cutoff) delete this.data.claimed[k];
   }
 
-  /* ---------------- tasks ---------------- */
+  // tasks
 
   task(id: string | null | undefined): Task | undefined {
     return id ? this.data.tasks.find((x) => x.id === id) : undefined;
@@ -901,7 +896,7 @@ class Store {
     this.persist();
   }
 
-  /** Repeating tasks start each day with fresh steps. */
+  // repeating tasks: reset subtasks each day
   ensureSubtaskDay(task: Task) {
     if (task.repeat === 'none') return;
     if (task.subtasksDay !== this.today) {
@@ -924,7 +919,7 @@ class Store {
     return sub.done;
   }
 
-  /* ---------------- focus ---------------- */
+  // focus
 
   recordFocus(input: { start: number; end: number; minutes: number; completed: boolean; taskId: string | null }) {
     const minutes = Math.max(0, Math.round(input.minutes));
@@ -963,7 +958,7 @@ class Store {
     return { xp, gold };
   }
 
-  /* ---------------- daily quests ---------------- */
+  // daily quests
 
   claimQuest(id: string): { xp: number; gold: number } | null {
     const q = this.dailyQuests.find((x) => x.def.id === id);
@@ -982,7 +977,7 @@ class Store {
     return { ...CHEST_REWARD };
   }
 
-  /* ---------------- shop ---------------- */
+  // shop
 
   owns(id: string | null | undefined): boolean {
     return !!id && this.data.owned.includes(id);
@@ -1031,7 +1026,7 @@ class Store {
     this.persist();
   }
 
-  /* ---------------- achievements ---------------- */
+  // achievements
 
   queueAchievementCheck(delay = 450) {
     if (this.achievementsTimer) clearTimeout(this.achievementsTimer);
@@ -1071,14 +1066,14 @@ class Store {
     if (rounds > 1) this.persist();
   }
 
-  /* ---------------- reminders ---------------- */
+  // reminders
 
   checkReminders() {
     if (!this.ready) return;
     const now = new Date();
     const today = dayKey(now);
     const mins = nowMinutes(now);
-    const GRACE = 180; // minutes: older reminders are marked silently instead of ringing late
+    const GRACE = 180; // min, older ones get marked without ringing
     let changed = false;
     for (const task of this.data.tasks) {
       if (!task.time) continue;
@@ -1103,7 +1098,7 @@ class Store {
     if (changed) this.persist();
   }
 
-  /* ---------------- data management ---------------- */
+  // data
 
   exportText(): string {
     return JSON.stringify({ app: 'emberwise', exportedAt: isoNow(), data: $state.snapshot(this.data) }, null, 2);

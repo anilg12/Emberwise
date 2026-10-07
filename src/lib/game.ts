@@ -2,7 +2,7 @@ import type { Difficulty } from './types';
 
 export const DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard', 'epic'];
 
-/** Completing a task: the original "+50 XP" stays the default (normal). */
+// normal = +50 xp, same as the old java version
 export const TASK_XP: Record<Difficulty, number> = { easy: 25, normal: 50, hard: 80, epic: 120 };
 export const TASK_GOLD: Record<Difficulty, number> = { easy: 5, normal: 10, hard: 16, epic: 25 };
 export const SUBTASK_XP = 5;
@@ -13,12 +13,12 @@ export function focusReward(minutes: number, completed: boolean) {
   return { xp: m * 2 + 10, gold: Math.floor(m / 5) };
 }
 
-/** XP needed to go from `level` to `level + 1`. Level 1 → 2 costs 100, like the original. */
+// xp needed for level -> level + 1. 1 -> 2 is 100 like the old app
 export function xpToNext(level: number): number {
   return 100 + (level - 1) * 20;
 }
 
-/** Total XP required to reach `level`. */
+// total xp to reach `level`
 export function xpForLevel(level: number): number {
   const n = level - 1;
   return 100 * n + 10 * n * (n - 1);
@@ -41,7 +41,7 @@ export interface Rank {
   glow: string;
 }
 
-/** Acemi → Çalışkan → Usta → Efsane, plus two new tiers for the truly dedicated. */
+// Acemi, Çalışkan, Usta, Efsane from the old app + 2 new ones on top
 export const RANKS: Rank[] = [
   { id: 'novice', minLevel: 1, color: '#9a8f7f', glow: '#d8cfc2' },
   { id: 'diligent', minLevel: 3, color: '#3e9b6e', glow: '#a6dcc0' },
@@ -72,7 +72,7 @@ export function uid(): string {
   return Math.random().toString(36).slice(2, 14);
 }
 
-/** Small deterministic PRNG so daily quests are the same all day long. */
+// seeded prng so the daily quests don't change during the day
 export function seeded(seed: string) {
   let h = 1779033703 ^ seed.length;
   for (let i = 0; i < seed.length; i++) {

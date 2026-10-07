@@ -105,7 +105,7 @@
     };
     document.addEventListener('visibilitychange', onVisibility);
 
-    // Decorative loops rest while the window is in the background.
+    // pause the decorative animations while the window is in the background
     const onBlur = () => root.classList.add('paused-anim');
     const onFocus = () => {
       root.classList.remove('paused-anim');
@@ -140,7 +140,7 @@
     };
   });
 
-  // Theme, accent, motion and language → <html>, the native title bar and the pre-paint hint.
+  // theme/accent/motion/lang -> <html>, native title bar and the hint boot.js reads
   $effect(() => {
     const root = document.documentElement;
     const s = store.data.settings;
@@ -162,7 +162,7 @@
     configureSfx(store.data.settings.sounds, store.data.settings.volume);
   });
 
-  /** The daily gift opens on its own once a day; later it waits on the Today page and in Rewards. */
+  // daily gift pops up by itself once a day, after that it waits on Today and Rewards
   function maybeShowGift() {
     if (!store.ready || !store.data.onboarded || store.giftClaimed || store.data.login.lastDay !== store.today) return false;
     let shown: string | null = null;
@@ -183,7 +183,7 @@
     return true;
   }
 
-  /** A gentle time-of-day line when the app opens, a few hours apart at most. */
+  // greeting line on open, at most once every few hours
   function greet() {
     if (maybeShowGift() || !store.data.onboarded) return;
     let last = 0;
@@ -201,7 +201,7 @@
     setTimeout(() => motivate(timeTag(), 'happy', 8000), 1600);
   }
 
-  // A brand-new hero gets the first gift right after onboarding.
+  // new users get the first gift right after onboarding
   $effect(() => {
     if (store.data.onboarded && store.ready) untrack(() => maybeShowGift());
   });
@@ -210,7 +210,7 @@
     setCloseToTray(store.data.settings.closeToTray);
   });
 
-  // Ambience plays during focus sessions, or whenever the user chose to just listen.
+  // ambience: during focus, or when "just listen" is on
   $effect(() => {
     const mix = store.data.settings.ambient;
     setMasterLevel(store.data.settings.ambientVolume);
@@ -219,7 +219,7 @@
     else stopAll();
   });
 
-  // Keep the idle timer in sync with duration settings.
+  // idle timer follows the duration settings
   $effect(() => {
     store.data.settings.focusMin;
     store.data.settings.shortMin;
@@ -227,7 +227,7 @@
     if (store.ready) timer.syncIdleDuration();
   });
 
-  // Re-publish the tray labels when the language changes.
+  // tray labels need an update when the language changes
   $effect(() => {
     store.data.settings.lang;
     if (store.ready) timer.publish();

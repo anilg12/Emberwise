@@ -1,4 +1,4 @@
-// UI-level actions: store changes plus the sounds, floaters and toasts that make them feel good.
+// ui actions: store change + sound/floater/toast feedback
 
 import { store } from './state.svelte';
 import { fx } from './fx.svelte';
@@ -15,7 +15,7 @@ import type { Task } from './types';
 
 let lastTaskWords = 0;
 
-/** A fitting line from the ember spirit, when the user wants them. */
+// a line from ember, if turned on in settings
 export function motivate(tag: QuoteTag, mood: Whisper['mood'] = 'happy', duration?: number) {
   if (!store.data.settings.motivation) return;
   const q = pickQuote(tag, store.data.profile.name);
@@ -50,7 +50,7 @@ export function toggleTask(task: Task, el?: Element | null) {
     action: { label: t('common.undo'), run: () => store.uncompleteTask(id) },
     duration: 3600,
   });
-  // Words after a finished quest: always for the big ones and a cleared day, now and then otherwise.
+  // after a quest: always for the big ones and a cleared day, otherwise only sometimes
   const now = Date.now();
   if (store.todayTasks.open.length === 0 && store.todayTasks.done.length > 1) motivate('allDone', 'wow');
   else if (task.difficulty === 'epic' || task.difficulty === 'hard') motivate('epic', 'wow');

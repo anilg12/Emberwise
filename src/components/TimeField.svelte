@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Hour and minute spinners — scroll, arrow keys, or just type the digits.
+  // hour/minute spinner: wheel, arrow keys or just type
   import Icon from './Icon.svelte';
 
   let { value, onchange, disabled = false }: { value: string; onchange: (v: string) => void; disabled?: boolean } = $props();
@@ -21,7 +21,7 @@
     if (part === 'h') set(h + dir, m);
     else {
       const s = big ? 15 : 5;
-      // Snap to the step grid first so 14:07 → 14:10, then move.
+      // snap to step first (14:07 -> 14:10), then move
       const snapped = dir > 0 ? Math.floor(m / s) * s + s : Math.ceil(m / s) * s - s;
       set(h, snapped >= 60 ? 0 : snapped < 0 ? 60 - s : snapped);
     }

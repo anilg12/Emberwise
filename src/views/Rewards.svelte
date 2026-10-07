@@ -20,7 +20,7 @@
   const nextStep = $derived(LOGIN_PATH.find((p) => p.day > login.total));
   const marks = $derived(tv<Record<number, string>>('rewards.marks'));
 
-  // Calendar: the last 20 weeks, Monday first.
+  // last 20 weeks, monday first
   const WEEKS = 20;
   const loginSet = $derived(new Set(login.days));
   const calendar = $derived.by(() => {

@@ -1,5 +1,5 @@
-// The ambience mixer: real field recordings (looped seamlessly, see scripts/make-ambience.mjs)
-// layered with two synthesized noise colours. Every layer fades in and out; nothing ever clicks.
+// ambience mixer: field recordings (loops made by scripts/make-ambience.mjs) + two generated noise layers.
+// every layer fades in/out to avoid clicks
 
 import { audioContext } from './sound';
 import { readSound } from './platform';
@@ -30,7 +30,7 @@ export const AMBIENCES: AmbienceDef[] = [
 
 export const AMBIENT_KINDS = AMBIENCES.map((a) => a.id);
 
-/** Ready-made blends. */
+// presets
 export const PRESETS: { id: string; mix: AmbientMix }[] = [
   { id: 'rainyCafe', mix: { cafe: 0.7, rain: 0.55 } },
   { id: 'campNight', mix: { fire: 0.75, night: 0.5 } },
@@ -62,7 +62,7 @@ function getBus(c: AudioContext): GainNode {
   if (!bus) {
     bus = c.createGain();
     bus.gain.value = masterLevel * 0.9;
-    // A soft shelf takes the edge off the top end, so even a long session stays easy on the ears.
+    // high shelf cut, less harsh on long sessions
     const soft = c.createBiquadFilter();
     soft.type = 'highshelf';
     soft.frequency.value = 6500;
@@ -95,7 +95,7 @@ function noiseBuffer(c: AudioContext, kind: 'brown' | 'pink', seconds = 8): Audi
         raw[i] = last * 2.6;
       }
     }
-    // Crossfade the tail into the head so the loop point is seamless.
+    // crossfade tail into head for a clean loop
     const data = buf.getChannelData(ch);
     for (let i = 0; i < len; i++) {
       if (i < fade) {
@@ -151,7 +151,7 @@ async function startLayer(c: AudioContext, layer: Layer) {
     nodes.push(lp);
   }
   head.connect(layer.gain);
-  // Start somewhere random so a familiar mix never begins the same way twice.
+  // random start offset so it doesn't always start the same
   src.start(c.currentTime + 0.02, Math.random() * (loopEnd || buf.duration) * 0.9);
   layer.source = src;
   layer.nodes = nodes;
@@ -176,7 +176,7 @@ function stopLayer(c: AudioContext, layer: Layer) {
     for (const n of nodes) n.disconnect();
     gain.disconnect();
   }, 2600);
-  // Decoded loops are a few MB each: let go of the ones that stay unused for a while.
+  // decoded loops are a few MB each, drop the unused ones after a while
   const old = releaseTimers.get(kind);
   if (old) clearTimeout(old);
   releaseTimers.set(
@@ -188,7 +188,7 @@ function stopLayer(c: AudioContext, layer: Layer) {
   );
 }
 
-/** Brings the playing layers in line with `mix`, fading whatever changes. */
+// sync playing layers to `mix` (with fades)
 export function setMix(mix: AmbientMix) {
   const c = audioContext();
   if (!c) return;

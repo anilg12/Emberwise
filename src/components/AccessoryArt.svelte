@@ -1,8 +1,8 @@
 <svelte:options namespace="svg" />
 
 <script lang="ts">
-  // Accessories in avatar space: eyes at (84,100) and (116,100), ears at (57,97) and (143,97),
-  // neck at (100,141). "back" is behind the body, "chest" on the clothes, "face" over the head.
+  // avatar coords: eyes (84,100) (116,100), ears (57,97) (143,97), neck (100,141)
+  // layers: back = behind the body, chest = on the clothes, face = over the head
   let { id, layer }: { id: string; layer: 'back' | 'chest' | 'face' } = $props();
 
   const star = (x: number, y: number, r: number) => {

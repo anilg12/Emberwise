@@ -1,10 +1,5 @@
 'use strict';
 
-/*
- * Emberwise — main process
- * Crafted by Anıl Gül
- */
-
 const {
   app,
   BrowserWindow,
@@ -35,12 +30,12 @@ const COLORS = {
 app.setName('Emberwise');
 if (IS_WIN) app.setAppUserModelId(APP_ID);
 
-// Development only: point the app at a throw-away profile (used by the screenshot harness).
+// dev only: lets the screenshot scripts run on a throwaway profile
 if (!app.isPackaged && process.env.EMBERWISE_USER_DATA) {
   app.setPath('userData', process.env.EMBERWISE_USER_DATA);
 }
 
-// One window, one app. A second launch just brings the first one forward.
+// single instance, a second launch just focuses the open window
 if (!app.requestSingleInstanceLock()) {
   app.quit();
   process.exit(0);
@@ -60,9 +55,8 @@ let trayLabels = {
 };
 let trayRunning = false;
 
-/* ------------------------------------------------------------------ */
-/* Storage: one JSON file, written atomically with a rolling backup.   */
-/* ------------------------------------------------------------------ */
+// ---- storage ----
+// one json file, atomic write + rolling backup
 
 const dataDir = app.getPath('userData');
 const dataFile = path.join(dataDir, 'emberwise-data.json');
@@ -82,7 +76,7 @@ function readJson(file) {
 function loadData() {
   const main = readJson(dataFile);
   if (main) return main;
-  // Main file missing or corrupt: fall back to the last good backup.
+  // main file missing/corrupt -> use the backup
   return readJson(backupFile);
 }
 
@@ -97,7 +91,7 @@ let lastBackupAt = 0;
 function saveData(text) {
   if (typeof text !== 'string' || text.length < 2) return false;
   try {
-    JSON.parse(text); // never persist something we cannot read back
+    JSON.parse(text); // don't write something we can't read back
   } catch {
     return false;
   }
@@ -127,15 +121,13 @@ if (initialData && initialData.settings) {
   nativeTheme.themeSource = t === 'light' || t === 'dark' ? t : 'system';
 }
 
-/* ------------------------------------------------------------------ */
-/* Window                                                              */
-/* ------------------------------------------------------------------ */
+// ---- window ----
 
 function loadWindowState() {
   const s = readJson(windowStateFile);
   const fallback = { width: 1220, height: 800, maximized: false };
   if (!s || typeof s.width !== 'number') return fallback;
-  // Make sure the saved bounds are still visible on one of the current displays.
+  // saved bounds might be on a monitor that isn't connected anymore
   if (typeof s.x === 'number' && typeof s.y === 'number') {
     const visible = screen.getAllDisplays().some((d) => {
       const a = d.workArea;
@@ -229,7 +221,7 @@ function createWindow() {
   win.on('close', (e) => {
     if (isQuitting) return;
     if (IS_MAC) {
-      // macOS convention: closing the window keeps the app alive in the dock.
+      // mac: closing the window keeps the app in the dock
       e.preventDefault();
       win.hide();
       return;
@@ -245,7 +237,7 @@ function createWindow() {
     win = null;
   });
 
-  // Never navigate away from the app; external links go to the default browser.
+  // stay inside the app, external links open in the browser
   win.webContents.on('will-navigate', (e, url) => {
     const current = win && win.webContents.getURL();
     if (url !== current) {
@@ -265,7 +257,7 @@ function createWindow() {
   }
 }
 
-/** The first time the window hides into the tray, tell the user where Emberwise went. */
+// first time we hide to tray, tell the user where the app went
 function showTrayNoticeOnce() {
   const flag = path.join(dataDir, 'tray-notice-shown');
   if (fs.existsSync(flag) || !Notification.isSupported()) return;
@@ -280,7 +272,7 @@ function showTrayNoticeOnce() {
     n.on('click', showWindow);
     n.show();
   } catch {
-    /* purely informational */
+    /* just a hint */
   }
 }
 
@@ -303,9 +295,7 @@ function openExternalSafe(url) {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Tray / menu bar                                                     */
-/* ------------------------------------------------------------------ */
+// ---- tray / menu bar ----
 
 function buildTrayMenu() {
   if (!tray) return;
@@ -387,9 +377,7 @@ function buildAppMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-/* ------------------------------------------------------------------ */
-/* IPC                                                                 */
-/* ------------------------------------------------------------------ */
+// ---- ipc ----
 
 ipcMain.handle('store:load', () => {
   const data = loadData();
@@ -400,7 +388,7 @@ ipcMain.on('store:saveSync', (e, text) => {
   e.returnValue = saveData(text);
 });
 
-// Ambience loops ship inside dist/ambience. Only plain names are accepted, so nothing else on disk can be read.
+// ambience loops are in dist/ambience. only plain file names allowed so this can't read anything else
 ipcMain.handle('asset:sound', async (_e, name) => {
   if (typeof name !== 'string' || !/^[a-z]{2,16}$/.test(name)) return null;
   try {
@@ -542,9 +530,7 @@ ipcMain.handle('data:import', async (_e, payload) => {
 
 ipcMain.on('open:external', (_e, url) => openExternalSafe(url));
 
-/* ------------------------------------------------------------------ */
-/* Lifecycle                                                           */
-/* ------------------------------------------------------------------ */
+// ---- lifecycle ----
 
 app.on('second-instance', showWindow);
 

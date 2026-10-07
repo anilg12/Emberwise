@@ -32,7 +32,7 @@ export function t(key: string, params?: Record<string, string | number>): string
   return (v as string).replace(/\{(\w+)\}/g, (_, k: string) => (k in params ? String(params[k]) : `{${k}}`));
 }
 
-/** Raw dictionary value (arrays, tuples). */
+// raw value (arrays/tuples)
 export function tv<T>(key: string): T {
   const v = lookup(i18n.dict, key);
   return (v ?? lookup(dicts.en, key)) as T;

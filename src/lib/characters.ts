@@ -1,12 +1,12 @@
 import type { HeroClass } from './types';
 
-/** One colour variant of an outfit. `alt` is the second garment (shirt, stripes, fur…). */
+/** outfit color variant. alt = second garment (shirt, stripes, fur...) */
 export interface Tone {
   main: string;
   dark: string;
   trim: string;
   alt: string;
-  /** Sleeve colour when it differs from `dark`. */
+  /** sleeve color if different from dark */
   sleeve?: string;
 }
 
@@ -15,7 +15,7 @@ export interface CharacterDef {
   tier: 'free' | 'shop' | 'login';
   legs?: string;
   boots?: string;
-  /** Gloved hands instead of bare ones. */
+  /** gloves instead of bare hands */
   gloves?: string;
   tones: Tone[];
 }
@@ -23,7 +23,7 @@ export interface CharacterDef {
 const T = (main: string, dark: string, trim: string, alt = main, sleeve?: string): Tone => ({ main, dark, trim, alt, sleeve });
 
 export const CHARACTERS: CharacterDef[] = [
-  // Free for everyone.
+  // free
   {
     id: 'wizard',
     tier: 'free',
@@ -88,7 +88,7 @@ export const CHARACTERS: CharacterDef[] = [
     ],
   },
 
-  // From the shop.
+  // shop
   {
     id: 'explorer',
     tier: 'shop',
@@ -143,7 +143,7 @@ export const CHARACTERS: CharacterDef[] = [
     ],
   },
 
-  // Earned on the login path only.
+  // login path only
   {
     id: 'guardian',
     tier: 'login',
@@ -190,7 +190,7 @@ export function toneOf(id: HeroClass | string, tone: number): Tone {
   return c.tones[tone] ?? c.tones[0];
 }
 
-/** The shop/login item that unlocks a character, or null when it is free. */
+// item that unlocks a character, null if it's free
 export function charItemId(id: HeroClass): string | null {
   return character(id).tier === 'free' ? null : `char_${id}`;
 }

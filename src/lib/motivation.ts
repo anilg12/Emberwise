@@ -1,5 +1,5 @@
-// Picks a fitting line for a moment and personalises it. Recently shown lines rest for a while,
-// so the same words don't come back too soon.
+// picks a quote for the moment and fills in the name.
+// recently shown ones are skipped for a while so they don't repeat
 
 import { QUOTES, type QuoteTag } from './quotes';
 import { i18n } from './i18n.svelte';
@@ -31,7 +31,7 @@ export interface Quote {
   text: string;
 }
 
-/** The text of a quote id in the current language, personalised. */
+// quote text in the current language, name filled in
 export function quoteText(id: string, name = ''): string | null {
   const [tag, index] = id.split(':');
   const pair = QUOTES[tag as QuoteTag]?.[Number(index)];
@@ -42,11 +42,11 @@ export function quoteText(id: string, name = ''): string | null {
 export function personalise(text: string, name: string): string {
   const n = name.trim();
   if (n) return text.replaceAll('{name}', n);
-  // Without a name, "Günaydın {name}!" simply becomes "Günaydın!".
+  // no name: "Günaydın {name}!" -> "Günaydın!"
   return text.replace(/,?\s*\{name\}/g, '').replace(/\s+([!.?,])/g, '$1');
 }
 
-/** A random line for the moment; one in four times a general life line joins the draw. */
+// random line for the moment, 1 in 4 times the general ones are in the pool too
 export function pickQuote(tag: QuoteTag, name = '', withLife = true): Quote {
   const pool: { id: string; tag: QuoteTag }[] = QUOTES[tag].map((_, i) => ({ id: `${tag}:${i}`, tag }));
   if (withLife && tag !== 'life' && Math.random() < 0.25) {
@@ -59,7 +59,7 @@ export function pickQuote(tag: QuoteTag, name = '', withLife = true): Quote {
   return { ...pick, text: quoteText(pick.id, name) ?? '' };
 }
 
-/** The same line all day long, different every day. */
+// quote of the day (same all day)
 export function quoteOfDay(day: string, name = '', offset = 0): Quote {
   const rnd = seeded(`words-${day}`);
   const base = Math.floor(rnd() * QUOTES.life.length);

@@ -1,6 +1,6 @@
 'use strict';
-// Captures the dev gallery (npm run dev must be running) at full size, for reviewing the artwork.
-// Usage: npx electron scripts/gallery-shot.cjs --q="s=chars&body=f" --out=gallery.png [--w=1100]
+// screenshot of the dev gallery (npm run dev has to be running), for checking the artwork
+// npx electron scripts/gallery-shot.cjs --q="s=chars&body=f" --out=gallery.png [--w=1100]
 
 const fs = require('node:fs');
 const path = require('node:path');

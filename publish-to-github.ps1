@@ -11,7 +11,7 @@
 #
 # Pencere is bitince (ya da bir hata olursa) acik kalir; her adim publish-log.txt dosyasina da yazilir.
 
-# Native tools (git, gh) report through exit codes; we check those explicitly below.
+# git/gh hata verince exception atmiyor, exit code'lari asagida kendim kontrol ediyorum
 $ErrorActionPreference = 'Continue'
 Set-Location $PSScriptRoot
 $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The Emberwise mark: an ember with a curl, sitting in a warm plum tile.
+  // logo: ember with a curl on a plum tile
   let { size = 28 }: { size?: number } = $props();
   const id = `lg${Math.random().toString(36).slice(2, 8)}`;
 </script>

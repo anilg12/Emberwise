@@ -1,7 +1,7 @@
 'use strict';
-// Records short demo GIFs of the real app for the README.
-// Usage: npx electron scripts/record.cjs --scene=quest --out=docs/media [--theme=light] [--lang=tr]
-// Scenes: quest, focus, hero, shop, theme, onboarding, rewards, sounds, words
+// records the demo gifs for the readme
+// npx electron scripts/record.cjs --scene=quest --out=docs/media [--theme=light] [--lang=tr]
+// scenes: quest, focus, hero, shop, theme, onboarding, rewards, sounds, words
 
 const fs = require('node:fs');
 const os = require('node:os');
@@ -32,7 +32,7 @@ function dayKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/* ------------------------------------------------------------ profile */
+// --- profile ---
 
 function iso(daysAgo, h = 10) {
   const d = new Date();
@@ -54,7 +54,7 @@ function profile() {
   data.settings.motion = 'full';
   data.settings.closeToTray = false;
 
-  // A tidy, believable history worth exactly 670 XP: level 5 (Çalışkan), 30 XP from Usta.
+  // fake history worth exactly 670 xp (lvl 5 Çalışkan, 30 from Usta)
   const log = [];
   const xpPlan = [50, 60, 80, 50, 120, 60, 50, 25, 60, 50, 65];
   xpPlan.forEach((xp, i) => {
@@ -82,11 +82,11 @@ function profile() {
     data.equipped = { hat: null, pet: null, bg: 'bg_meadow', acc: null };
   }
   if (scene === 'rewards') {
-    // Today's gift is still wrapped and the path has a few stops waiting.
+    // today's gift unopened + a few path stops waiting
     const today = dayKey(new Date());
     data.login.claimed = data.login.claimed.filter((k) => k !== `gift:${today}`);
     data.equipped = { hat: null, pet: 'pet_cat', bg: 'bg_meadow', acc: null };
-    // Keep the gift from levelling up mid-scene.
+    // so the gift doesn't level us up mid recording
     data.log.find((e) => e.id === 'adj').xp -= 90;
   }
   if (scene === 'sounds') data.settings.ambient = {};
@@ -106,14 +106,14 @@ process.env.EMBERWISE_USER_DATA = userData;
 const { app } = require('electron');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/* ------------------------------------------------------------ recorder */
+// --- recorder ---
 
 class Recorder {
   constructor(win) {
     this.win = win;
     this.frames = [];
     this.interval = 66;
-    this.speed = 1; // >1 = time-lapse: frames are captured slower than they are played
+    this.speed = 1; // >1 = timelapse
     this.last = 0;
     this.latest = null;
     this.ticker = null;
@@ -126,7 +126,7 @@ class Recorder {
   start(interval = 66) {
     this.interval = interval;
     const wc = this.win.webContents;
-    // Frames arrive as the page paints; we keep at most one per interval.
+    // frames come in on paint, keep max one per interval
     wc.beginFrameSubscription(false, (image) => {
       this.latest = image;
       const now = Date.now();
@@ -135,7 +135,7 @@ class Recorder {
         this.keep(image);
       }
     });
-    // While nothing repaints, still record the steady frame so timing stays honest.
+    // nothing repainted, still push the last frame so the timing stays right
     this.ticker = setInterval(() => {
       if (this.latest && Date.now() - this.last >= Math.max(this.interval, 400)) {
         this.last = Date.now();
@@ -164,7 +164,7 @@ function encodeGif(frames, file, holdLastMs = 1600) {
   const { width, height } = frames[0];
   const rgbaFrames = frames.map((f) => toRgba(f.bgra));
 
-  // One shared palette (255 colours + 1 transparent slot) sampled across the whole clip.
+  // one palette for the whole clip: 255 colors + 1 transparent
   const sampleEvery = Math.max(1, Math.floor(rgbaFrames.length / 24));
   const parts = [];
   for (let i = 0; i < rgbaFrames.length; i += sampleEvery) parts.push(rgbaFrames[i]);
@@ -186,7 +186,7 @@ function encodeGif(frames, file, holdLastMs = 1600) {
     delay = Math.max(40, Math.min(delay, 4000));
     let data = index;
     if (prev) {
-      // Only store pixels that changed; everything else stays transparent and keeps the old frame.
+      // only changed pixels, the rest is transparent so the previous frame shows through
       data = new Uint8Array(index.length);
       for (let p = 0; p < index.length; p++) data[p] = index[p] === prev[p] ? TRANSPARENT : index[p];
     }
@@ -205,7 +205,7 @@ function encodeGif(frames, file, holdLastMs = 1600) {
   return { frames: rgbaFrames.length, kb: Math.round(gif.bytes().length / 1024) };
 }
 
-/* ------------------------------------------------------------ demo helpers */
+// --- demo helpers ---
 
 function helpers(win) {
   const wc = win.webContents;
@@ -281,7 +281,7 @@ function helpers(win) {
   return { js, installCursor, moveTo, hover, click, type, key, center };
 }
 
-/* ------------------------------------------------------------ scenes */
+// --- scenes ---
 
 const SCENES = {
   async quest(h, rec) {
@@ -308,7 +308,7 @@ const SCENES = {
     rec.start(80);
     await wait(500);
     await h.click('.ctl.main', 0, 600);
-    // Time-lapse through the one-minute session.
+    // timelapse the 1 min session
     rec.interval = 900;
     rec.speed = 12;
     await h.moveTo(1150, 700, 300);
@@ -328,14 +328,14 @@ const SCENES = {
     await wait(400);
     for (const i of [2, 4]) await h.click('.hairs .hair', i, 450);
     await h.click('.sw', 6 + 3, 400);
-    // Free characters, then a bought one and the login-only guardian.
+    // free chars, then a bought one, then the login-only guardian
     for (const i of [4, 5, 6, 7]) await h.click('.chars .char', i, 650);
     await h.click('.chars .char', 8, 650);
     await h.click('.chars .char', 13, 700);
     for (const i of [1, 2, 3]) await h.click('.tones .tone', i, 500);
     await h.click('.chars .char', 14, 800);
     await h.click('.right .seg button', 1, 800);
-    // Wardrobe items: hats, accessories, companions, realms.
+    // hats, accessories, companions, realms
     for (const i of [2, 4, 7, 9, 12, 15]) await h.click('.items .item', i, 650);
     await wait(900);
     await rec.stop();
@@ -451,7 +451,7 @@ const SCENES = {
   },
 };
 
-/* ------------------------------------------------------------ main */
+// --- main ---
 
 let warmed = false;
 app.on('browser-window-created', (_e, win) => {

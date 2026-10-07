@@ -39,7 +39,7 @@ export type AmbientKind =
   | 'train'
   | 'brown'
   | 'pink';
-/** Which ambience layers play together, each with its own level (0–1). Empty = silence. */
+/** layer -> volume (0-1), empty = off */
 export type AmbientMix = Partial<Record<AmbientKind, number>>;
 export type Route = 'today' | 'quests' | 'focus' | 'hero' | 'shop' | 'rewards' | 'awards' | 'stats' | 'settings';
 
@@ -49,7 +49,7 @@ export interface Look {
   hair: number;
   hairColor: number;
   heroClass: HeroClass;
-  /** Outfit colour variant of the current character (0–3). */
+  /** outfit color variant 0-3 */
   tone: number;
 }
 
@@ -70,21 +70,21 @@ export interface Task {
   purpose: string;
   difficulty: Difficulty;
   categoryId: string | null;
-  /** Due day for one-off tasks; start day for repeating tasks. */
+  /** due date, or start date for repeating tasks */
   date: string | null;
-  /** Reminder time of day, HH:MM. */
+  /** HH:MM */
   time: string | null;
   repeat: Repeat;
-  /** Weekdays (0 = Sunday) for `custom` repeat. */
+  /** weekdays for custom repeat, 0 = sunday */
   repeatDays: number[];
   done: boolean;
   doneAt: string | null;
-  /** Day keys a repeating task was completed on (trimmed to recent history). */
+  /** days it was done (repeating tasks, only recent ones kept) */
   doneDays: string[];
-  /** The day key the reminder last fired for. */
+  /** last day the reminder fired */
   remindedKey: string | null;
   subtasks: Subtask[];
-  /** Day the subtask checkmarks belong to (repeating tasks reset daily). */
+  /** which day the subtask checks belong to (reset daily for repeating) */
   subtasksDay: string | null;
   createdAt: string;
   focusMinutes: number;
@@ -92,7 +92,7 @@ export interface Task {
 
 export interface Category {
   id: string;
-  /** Built-in categories are translated through this key until renamed. */
+  /** i18n key for built-in categories, until renamed */
   key?: string;
   name: string;
   color: string;
@@ -118,7 +118,7 @@ export interface LogEntry {
   gold: number;
   ref: string;
   label?: string;
-  /** Small facts used by daily quests and achievements. */
+  /** extra info for quests/achievements */
   meta?: {
     d?: Difficulty;
     p?: 1; // had a purpose
@@ -154,9 +154,9 @@ export interface Settings {
   autoFocus: boolean;
   ambient: AmbientMix;
   ambientVolume: number;
-  /** Gentle lines of encouragement after actions. */
+  /** motivational lines after actions */
   motivation: boolean;
-  /** Daily focus goal in minutes. */
+  /** daily focus goal, minutes */
   dailyGoal: number;
   closeToTray: boolean;
   openAtLogin: boolean;
@@ -182,19 +182,19 @@ export interface Equipped {
 }
 
 export interface LoginState {
-  /** Distinct days Emberwise was opened. */
+  /** number of different days the app was opened */
   total: number;
   streak: number;
   best: number;
   lastDay: string | null;
-  /** Recent login days (newest last), for the calendar and the weekly/monthly chests. */
+  /** recent login days, newest last (calendar + chests) */
   days: string[];
-  /** Claimed rewards: gift:<day>, week:<monday>, month:<yyyy-mm>, path:<n>. */
+  /** claimed: gift:<day>, week:<monday>, month:<yyyy-mm>, path:<n> */
   claimed: string[];
 }
 
 export interface JournalEntry {
-  /** 1 (heavy) … 5 (glowing). */
+  /** 1 = rough ... 5 = great */
   mood: number;
   note: string;
 }
@@ -218,7 +218,7 @@ export interface Data {
   counters: { tasksCreated: number; remindersSet: number; purchases: number; breaths: number };
   login: LoginState;
   journal: Record<string, JournalEntry>;
-  /** Saved motivation lines (quote ids). */
+  /** saved quote ids */
   favorites: string[];
   timer: PersistedTimer | null;
 }

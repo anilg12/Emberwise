@@ -69,7 +69,7 @@ describe('daily login', () => {
   });
 
   it('weekly and monthly chests open after enough visits', () => {
-    // Monday 5 Oct 2026 … Friday 9 Oct.
+    // mon 5 oct 2026 - fri 9 oct
     expect(weekStart('2026-10-08')).toBe('2026-10-05');
     for (let d = 5; d <= 9; d++) {
       at(new Date(2026, 9, d, 9, 0));

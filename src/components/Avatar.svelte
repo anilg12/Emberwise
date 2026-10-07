@@ -44,7 +44,7 @@
   const cls = $derived(toneOf(look.heroClass, look.tone ?? 0));
   const rank = $derived(rankFor(level));
   const tier = $derived(decorations ? rankIndex(level) : 0);
-  // Some outfits already have something at the neck; the rank scarf would only crowd them.
+  // these already have something at the neck, skip the rank scarf
   const scarf = $derived(tier >= 1 && acc !== 'acc_bowtie' && !['chef', 'artist', 'frost', 'astronaut', 'coder'].includes(look.heroClass));
   const viewBox = $derived(
     crop === 'head'
@@ -58,7 +58,7 @@
             : '0 0 200 220',
   );
   const height = $derived(crop === 'full' ? size * 1.1 : crop === 'bust' ? (size * 170) / 156 : crop === 'figure' ? (size * 184) / 156 : size);
-  // A hat hides the top of the hair; long hair stays visible at the back.
+  // hat covers the top of the hair, long hair still shows at the back
   const hatCoversTop = $derived(
     ['hat_beanie', 'hat_viking', 'hat_wizard', 'hat_cap', 'hat_chef', 'hat_safari', 'hat_fedora', 'hat_tricorn', 'hat_straw', 'hat_beret'].includes(hat ?? ''),
   );

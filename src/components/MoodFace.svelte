@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-  // Five little faces, from a heavy day to a glowing one.
+  // 5 faces, 1 = rough day ... 5 = great
   let { mood, size = 32 }: { mood: number; size?: number } = $props();
 
   const c = $derived(MOOD_COLORS[Math.max(0, Math.min(4, mood - 1))]);

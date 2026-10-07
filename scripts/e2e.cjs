@@ -1,7 +1,7 @@
 'use strict';
-// End-to-end smoke test: drives the real Electron app through the main user flows
-// with a fresh profile and fails on any assertion or renderer error.
-// Usage: npx electron scripts/e2e.cjs
+// e2e smoke test: runs the real electron app on a fresh profile through the main flows,
+// fails on any assert or renderer error
+// npx electron scripts/e2e.cjs
 
 const fs = require('node:fs');
 const os = require('node:os');

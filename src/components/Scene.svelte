@@ -1,10 +1,10 @@
 <script lang="ts">
-  // Realms: backdrops for the hero stage. viewBox 400×300, sliced to fill any box.
+  // realm backgrounds for the hero stage. viewBox 400x300, sliced to fill
   let { id = null, animate = true }: { id?: string | null; animate?: boolean } = $props();
 
   const uid = `sc${Math.random().toString(36).slice(2, 8)}`;
 
-  // Deterministic sprinkles so stars and books never "jump" between renders.
+  // seeded positions so the stars etc. don't move around between renders
   function rng(seed: number) {
     let s = seed;
     return () => {

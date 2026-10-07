@@ -1,7 +1,7 @@
 <svelte:options namespace="svg" />
 
 <script lang="ts">
-  // Companions, drawn in a 50×52 local box (feet at y≈50).
+  // pets, drawn in a 50x52 box (feet at y~50)
   let { id }: { id: string } = $props();
 </script>
 

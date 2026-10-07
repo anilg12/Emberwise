@@ -1,8 +1,8 @@
 <svelte:options namespace="svg" />
 
 <script lang="ts">
-  // Character outfits, drawn in avatar space (torso ≈ x 68–132, y 140–198; hands at 71,185 and 129,185).
-  // layer "back" sits behind the body, "torso" on the clothes, "held" behind the hands, "front" over the arms.
+  // outfits in avatar coords. torso ~ x 68-132, y 140-198, hands at (71,185) (129,185)
+  // layers: back = behind body, torso = on clothes, held = behind hands, front = over the arms
   import type { Tone } from '../lib/characters';
 
   let { id, c, layer, uid }: { id: string; c: Tone; layer: 'back' | 'torso' | 'held' | 'front'; uid: string } = $props();
@@ -13,7 +13,7 @@
     const n = parseInt(hex.slice(1), 16);
     return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
   }
-  /** Buttons and seams: dark on light cloth, light on dark cloth. */
+  // buttons/seams: dark on light cloth, light on dark
   const ink = $derived(luma(c.main) > 0.6 ? '#3b3149' : '#f4ead8');
   const star = (x: number, y: number, r: number) =>
     `M${x} ${y - r} L${x + r * 0.3} ${y - r * 0.3} L${x + r} ${y} L${x + r * 0.3} ${y + r * 0.3} L${x} ${y + r} L${x - r * 0.3} ${y + r * 0.3} L${x - r} ${y} L${x - r * 0.3} ${y - r * 0.3} Z`;

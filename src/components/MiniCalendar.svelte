@@ -11,7 +11,7 @@
     min = null,
   }: { value: string | null; today: string; onselect: (key: string) => void; min?: string | null } = $props();
 
-  // The calendar opens on the selected month; navigating afterwards is local state.
+  // opens on the selected month, navigating after that is local
   const start = parseDayKey(untrack(() => value ?? today));
   let year = $state(start.getFullYear());
   let month = $state(start.getMonth());

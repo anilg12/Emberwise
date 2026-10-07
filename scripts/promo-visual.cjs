@@ -1,7 +1,7 @@
 'use strict';
-// Renders promo/gorsel.html (the single LinkedIn image) to PNG at 1080×1350 and 2× that.
-// Usage: node scripts/promo-avatars.mjs && npx electron scripts/promo-visual.cjs
-// (promo/out/shots must hold today.png and gift-card.png from scripts/promo-shots.cjs)
+// promo/gorsel.html -> png, 1080x1350 and 2x
+// node scripts/promo-avatars.mjs && npx electron scripts/promo-visual.cjs
+// needs today.png and gift-card.png in promo/out/shots (from promo-shots.cjs)
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -29,7 +29,7 @@ function logo(size = 46) {
     <circle cx="27.6" cy="46" r="2" fill="#4a2320"/><circle cx="36.4" cy="46" r="2" fill="#4a2320"/></svg>`;
 }
 
-// Deterministic sprinkles across the top half.
+// fixed sparkles on the top half
 let seed = 11;
 const rnd = () => ((seed = (seed * 9301 + 49297) % 233280), seed / 233280);
 const stars = Array.from({ length: 46 }, () => {
@@ -67,7 +67,7 @@ app.whenReady().then(async () => {
   const win = new BrowserWindow({ width: 1080 * scale, height: 1350 * scale, show: false, useContentSize: true, enableLargerThanScreen: true, webPreferences: { offscreen: true } });
   win.setContentSize(1080 * scale, 1350 * scale);
   await win.loadFile(built);
-  // Offscreen windows render at 1×: zoom the page instead, so the same 1080×1350 layout comes out sharper.
+  // offscreen windows render at 1x, so zoom the page instead to get a sharper 2x of the same layout
   win.webContents.setZoomFactor(scale);
   await win.webContents.executeJavaScript(
     `document.fonts.ready.then(() => Promise.all([...document.images].map(i => i.complete ? 0 : new Promise(r => { i.onload = i.onerror = r; }))))`,

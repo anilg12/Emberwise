@@ -37,14 +37,14 @@
     const tips = tv<string[]>('focus.emberSays');
     return tips[(timer.cycle + new Date(store.clock).getHours()) % tips.length];
   });
-  // A fresh line for every break.
+  // new line every break
   const breakWords = $derived.by(() => {
     timer.cycle;
     timer.phase;
     return pickQuote('break', store.data.profile.name, false).text;
   });
   const goalP = $derived(Math.min(1, store.todayFocusMin / store.data.settings.dailyGoal));
-  // Ember grows brighter as the session goes on.
+  // ember gets brighter as the session goes
   const emberScale = $derived(timer.phase === 'focus' && timer.status !== 'idle' ? 0.82 + timer.progress * 0.32 : 0.92);
 
   function primary() {

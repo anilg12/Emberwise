@@ -1,6 +1,6 @@
-// Renders hero avatars to standalone SVG strings (Svelte SSR), so promo images can use the
-// exact in-app artwork at any resolution. Output: promo/out/avatars.json
-// Usage: node scripts/promo-avatars.mjs
+// renders hero avatars to plain svg (svelte ssr) so the promo images use the same art as the app
+// writes promo/out/avatars.json
+// node scripts/promo-avatars.mjs
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +11,7 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = path.join(root, 'promo', 'out');
 fs.mkdirSync(outDir, { recursive: true });
 
-// A varied cast: different bodies, skin tones, hair and every kind of outfit.
+// mix of bodies, skin tones, hair and outfits
 const CAST = [
   { key: 'chef', look: { body: 'm', skin: 3, hair: 0, hairColor: 0, heroClass: 'chef', tone: 0 }, hat: 'hat_chef' },
   { key: 'artist', look: { body: 'f', skin: 0, hair: 4, hairColor: 4, heroClass: 'artist', tone: 0 }, hat: 'hat_beret' },

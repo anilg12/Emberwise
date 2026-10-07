@@ -16,7 +16,7 @@
 
   const today = $derived(store.today);
 
-  /* ---------- totals ---------- */
+  // totals
   const totals = $derived.by(() => {
     let focus = 0;
     let completedSessions = 0;
@@ -29,7 +29,7 @@
     return { focus, tasks, avg, sessions: completedSessions };
   });
 
-  /* ---------- per-day aggregates ---------- */
+  // per day
   const perDay = $derived.by(() => {
     const map = new Map<string, { focus: number; sessions: number; xp: number; tasks: number }>();
     const get = (k: string) => {
@@ -51,7 +51,7 @@
     return map;
   });
 
-  /* ---------- focus chart ---------- */
+  // focus chart
   const days = $derived(Array.from({ length: range }, (_, i) => addDays(today, i - range + 1)));
   const series = $derived(days.map((k) => ({ key: k, min: perDay.get(k)?.focus ?? 0, sessions: perDay.get(k)?.sessions ?? 0 })));
   const maxMin = $derived(Math.max(0, ...series.map((s) => s.min)));
@@ -88,7 +88,7 @@
     return i % 5 === 0 || i === range - 1 ? String(d) : '';
   }
 
-  /* ---------- heatmap ---------- */
+  // heatmap
   const CELL = 15;
   const GAP = 4;
   const STEP = CELL + GAP;
@@ -96,7 +96,7 @@
   let heatW = $state(900);
   const weeks = $derived(Math.max(12, Math.min(53, Math.floor((heatW - LABEL_W) / STEP))));
   const heat = $derived.by(() => {
-    // Columns are weeks (Monday first), ending with the current week.
+    // columns = weeks (monday first), last one is this week
     const offset = (weekday(today) + 6) % 7;
     const start = addDays(today, -offset - (weeks - 1) * 7);
     const cols: { key: string; xp: number; future: boolean }[][] = [];
@@ -122,7 +122,7 @@
     }),
   );
 
-  /* ---------- categories ---------- */
+  // categories
   const byCategory = $derived.by(() => {
     const counts = new Map<string, number>();
     for (const e of store.data.log) {
@@ -144,7 +144,7 @@
     return { rows, max: Math.max(1, ...rows.map((r) => r.n)) };
   });
 
-  /* ---------- log ---------- */
+  // log
   const LOG_ICON: Record<LogEntry['kind'], string> = {
     task: 'check',
     subtask: 'list',
@@ -158,7 +158,7 @@
     journal: 'heart',
   };
 
-  /* ---------- mood ---------- */
+  // mood
   const moodDays = $derived.by(() => {
     const out: { key: string; mood: number; note: string }[] = [];
     for (let i = 29; i >= 0; i--) {

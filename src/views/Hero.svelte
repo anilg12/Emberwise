@@ -44,7 +44,7 @@
 
   function setBody(b: Body) {
     setLook('body', b);
-    // A gentle default: switching presentation suggests a matching hairstyle.
+    // switching body type also picks a matching hairstyle
     if (b === 'f' && look.hair === 0) setLook('hair', 1);
     if (b === 'm' && look.hair === 1) setLook('hair', 0);
   }

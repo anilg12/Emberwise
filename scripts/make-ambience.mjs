@@ -1,12 +1,11 @@
-// Builds the ambience loops in public/ambience from freely licensed field recordings on Wikimedia Commons.
+// builds public/ambience/*.ogg from CC field recordings on wikimedia commons
 //
-//   node scripts/make-ambience.mjs            (needs ffmpeg on PATH, or FFMPEG=/path/to/ffmpeg)
+//   node scripts/make-ambience.mjs   (needs ffmpeg on PATH, or FFMPEG=/path/to/ffmpeg)
 //
-// For every sound it downloads the source once (cached in .cache/ambience-src), cuts the calmest
-// stretch, softens it (high/low-pass, gentle compression), normalises the loudness, bakes a seamless
-// loop by crossfading the tail into the head, and encodes a small Opus file. Mono sources get a wide,
-// natural stereo image by pairing the loop with a half-loop-shifted copy of itself.
-// The credits for every recording are written to src/lib/ambience-credits.ts (shown in the app's About).
+// per sound: download once (cached in .cache/ambience-src), cut the quietest part, filter + light
+// compression, normalize loudness, crossfade the tail into the head so it loops, encode to opus.
+// mono sources get a half-loop shifted copy on the other channel so they sound stereo.
+// credits are written to src/lib/ambience-credits.ts (shown in About)
 
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -21,10 +20,8 @@ const FF = process.env.FFMPEG || 'ffmpeg';
 const UA = 'EmberwiseBuild/1.1 (https://github.com/anilg12/Emberwise)';
 const SR = 48000;
 
-/**
- * start/len in seconds: the loop is `len` long, `xfade` extra seconds are read for the seamless join.
- * lufs: target loudness. Everything sits low on purpose so it stays in the background.
- */
+// start/len in seconds. the loop is `len` long, `xfade` extra seconds are read for the join.
+// lufs = target loudness, kept low on purpose since it's background sound
 const SOUNDS = [
   { id: 'rain', file: 'Garden rainfall.ogg', start: 3, len: 48, hp: 70, lp: 9000, lufs: -31 },
   { id: 'storm', file: 'Light Rain Distant Thunder July 5th 2016.wav', start: 4, len: 96, hp: 40, lp: 7000, lufs: -32, comp: 0.5, author: 'kvgarlic (Freesound)' },
@@ -91,7 +88,7 @@ function ff(args, input) {
   return r;
 }
 
-/** Decodes a stretch of the source to interleaved stereo float PCM at 48 kHz. */
+// decode part of the source to interleaved stereo float pcm, 48k
 function decode(file, s) {
   const filters = [`highpass=f=${s.hp}:poles=2`, `lowpass=f=${s.lp}:poles=2`, `aresample=${SR}`];
   const probe = spawnSync(FF.replace(/ffmpeg(\.exe)?$/i, 'ffprobe$1'), ['-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=channels', '-of', 'csv=p=0', file], { encoding: 'utf8' });
@@ -101,7 +98,7 @@ function decode(file, s) {
   return { mono, pcm: f };
 }
 
-/** A gentle feed-forward compressor: shaves the loudest moments (a close bird, a cup on a saucer). */
+// simple feed-forward compressor for the peaks (a bird right at the mic, cups etc)
 function soften(ch, amount) {
   if (!amount) return;
   const att = Math.exp(-1 / (0.03 * SR));
@@ -123,7 +120,7 @@ function soften(ch, amount) {
   }
 }
 
-/** Equal-power crossfade of the tail into the head: the loop point becomes inaudible. */
+// equal-power crossfade tail -> head so you can't hear the loop point
 function bakeLoop(c, len, fade) {
   const out = new Float32Array(len);
   for (let i = 0; i < len; i++) {
@@ -177,7 +174,7 @@ async function main() {
     const len = Math.min(n - XFADE * SR, Math.round(s.len * SR));
     ch = ch.map((c) => bakeLoop(c, len, XFADE * SR));
     if (mono) {
-      // Pair the loop with itself, half a loop apart: two uncorrelated "ears", still seamless.
+      // fake stereo: same loop shifted by half its length on the other side, still loops cleanly
       const l = ch[0];
       const r = new Float32Array(len);
       const shift = Math.floor(len / 2);

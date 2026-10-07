@@ -17,7 +17,7 @@
   import TimeField from './TimeField.svelte';
   import MiniCalendar from './MiniCalendar.svelte';
 
-  // Form state is (re)initialised every time the editor opens.
+  // form state resets every time the editor opens
   let title = $state('');
   let purpose = $state('');
   let difficulty = $state<Difficulty>('normal');
@@ -42,7 +42,7 @@
     return minutesToTime(Math.min(23 * 60, (Math.floor(nowMinutes() / 60) + 1) * 60));
   }
 
-  // Only re-initialise when the editor opens (or targets another task) — never while typing.
+  // only reset on open / when switching task, not while typing
   $effect(() => {
     const open = store.editor.open;
     store.editor.taskId;

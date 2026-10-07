@@ -1,7 +1,4 @@
-/* ==========================================================================
-   Emberwise — design tokens & base styles
-   Warm paper by day, plum ink by night.
-   ========================================================================== */
+/* design tokens + base styles */
 
 :root {
   --font-ui: 'Nunito Variable', 'Nunito', ui-rounded, 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -107,7 +104,7 @@ html.dark {
   color-scheme: dark;
 }
 
-/* Accent palettes */
+/* accent palettes */
 html.accent-rose {
   --accent: #dc5a7b;
   --accent-2: #f08aa4;
@@ -179,7 +176,7 @@ html.dark.accent-honey {
   --accent-softer: rgba(240, 169, 58, 0.08);
 }
 
-/* ---------------------------------------------------------------- base */
+/* --- base --- */
 
 *,
 *::before,
@@ -285,7 +282,7 @@ a {
   color: var(--accent-text);
 }
 
-/* Scrollbars: slim, quiet, theme-aware */
+/* scrollbars */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -306,7 +303,7 @@ a {
   background: transparent;
 }
 
-/* ---------------------------------------------------------------- primitives */
+/* --- primitives --- */
 
 .card {
   background: var(--surface);
@@ -543,7 +540,7 @@ textarea.input {
   color: var(--ink-2);
 }
 
-/* Range sliders: a warm track that fills up to the thumb */
+/* range sliders, track fills up to the thumb */
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
@@ -602,7 +599,7 @@ input[type='range']:disabled::-webkit-slider-thumb {
   border: 0;
 }
 
-/* Page scaffolding */
+/* page layout */
 .page {
   max-width: 1120px;
   margin: 0 auto;
@@ -637,7 +634,7 @@ input[type='range']:disabled::-webkit-slider-thumb {
   font-weight: 650;
 }
 
-/* Reduced motion: keep feedback, drop movement */
+/* reduced motion: no movement, keep the feedback */
 html.reduce-motion *,
 html.reduce-motion *::before,
 html.reduce-motion *::after {

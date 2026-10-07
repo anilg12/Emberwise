@@ -1,7 +1,6 @@
-// Generates the animated SVG artwork used on the GitHub pages:
-// banner (light/dark), download buttons, rank ladder and the signature.
-// Text is converted to outlines so it renders identically everywhere.
-// Run: node scripts/make-readme-art.mjs
+// animated svgs for the github readme: banner (light/dark), download buttons, rank ladder, signature.
+// text is converted to paths so it looks the same everywhere
+// node scripts/make-readme-art.mjs
 
 import opentype from 'opentype.js';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -25,7 +24,7 @@ const FONTS = {
   caveat700: [load('@fontsource/caveat/files/caveat-latin-700-normal.woff'), load('@fontsource/caveat/files/caveat-latin-ext-700-normal.woff')],
 };
 
-/** Lays out text glyph by glyph, picking the subset font that has each character. */
+// lay out text glyph by glyph, using whichever subset font has the char
 function layout(text, fonts, size, letterSpacing = 0) {
   let x = 0;
   const glyphs = [];
@@ -35,7 +34,7 @@ function layout(text, fonts, size, letterSpacing = 0) {
     const glyph = font.charToGlyph(ch);
     const scale = size / font.unitsPerEm;
     if (prev && prev.font === font) {
-      // Some subset fonts return NaN for missing pairs; a NaN here would corrupt the whole path.
+      // some subset fonts give NaN kerning for missing pairs, which breaks the whole path
       const k = font.getKerningValue(prev.glyph, glyph);
       if (Number.isFinite(k)) x += k * scale;
     }
@@ -46,12 +45,12 @@ function layout(text, fonts, size, letterSpacing = 0) {
   return { glyphs, width: x - letterSpacing };
 }
 
-/** SVG path data for text, anchored at (x, y) baseline; align: start | middle | end. */
+// svg path for text at baseline (x, y). align: start | middle | end
 function textPath(text, { font, size, x = 0, y = 0, align = 'start', spacing = 0 }) {
   const { glyphs, width } = layout(text, FONTS[font], size, spacing);
   const ox = align === 'middle' ? x - width / 2 : align === 'end' ? x - width : x;
   let d = '';
-  // Round the origin: opentype.js prints "NaN" for some long floats (e.g. 1124.8000000000002).
+  // round it, opentype.js prints NaN for some long floats like 1124.8000000000002
   const r2 = (v) => Math.round(v * 100) / 100;
   for (const g of glyphs) d += g.glyph.getPath(r2(ox + g.x), r2(y), size).toPathData(2);
   return { d, width };
@@ -72,14 +71,14 @@ function rng(seed) {
   };
 }
 
-/** A hand-drawn underline from x0 to x1 that dips slightly and flicks up at the end. */
+// hand-drawn looking underline from x0 to x1, dips a bit and flicks up at the end
 function swashPath(x0, x1, y) {
   const w = x1 - x0;
   const p = (f) => (x0 + w * f).toFixed(1);
   return `M${x0} ${y} C${p(0.2)} ${y - 12} ${p(0.5)} ${y - 16} ${p(0.8)} ${y - 8} C${p(0.9)} ${y - 5} ${p(0.96)} ${y} ${x1} ${y - 6}`;
 }
 
-/* ------------------------------------------------------------------ banner */
+// --- banner ---
 
 function banner(mode) {
   const dark = mode === 'dark';
@@ -200,14 +199,14 @@ function banner(mode) {
 </svg>`;
 }
 
-/* ------------------------------------------------------------------ buttons */
+// --- buttons ---
 
 const WINDOWS_LOGO = (x, y, s) => {
   const g = s * 0.08;
   const q = (s - g) / 2;
   return `<rect x="${x}" y="${y}" width="${q}" height="${q}" rx="1.5"/><rect x="${x + q + g}" y="${y}" width="${q}" height="${q}" rx="1.5"/><rect x="${x}" y="${y + q + g}" width="${q}" height="${q}" rx="1.5"/><rect x="${x + q + g}" y="${y + q + g}" width="${q}" height="${q}" rx="1.5"/>`;
 };
-// A simple, hand-drawn apple silhouette (not the official mark).
+// simple apple shape, not the real logo
 const APPLE = (x, y, s) =>
   `<g transform="translate(${x} ${y}) scale(${s / 24})"><path d="M16.4 12.7c0-2.4 2-3.5 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.4-1-2.4-4z"/><path d="M14.1 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.4z"/></g>`;
 
@@ -239,7 +238,7 @@ function button({ file, label, sub, bg1, bg2, fg = '#ffffff', fgSub = 'rgba(255,
   writeFileSync(join(OUT, file), svg);
 }
 
-/* ------------------------------------------------------------------ ranks */
+// --- ranks ---
 
 const RANKS = [
   { name: 'Acemi', lv: 1, color: '#9a8f7f', glow: '#d8cfc2', icon: 'spark' },
@@ -302,7 +301,7 @@ ${items}
 </svg>`;
 }
 
-/* ------------------------------------------------------------------ signature */
+// --- signature ---
 
 function signature(mode) {
   const dark = mode === 'dark';
@@ -334,7 +333,7 @@ function signature(mode) {
 </svg>`;
 }
 
-/* ------------------------------------------------------------------ write */
+// --- write ---
 
 writeFileSync(join(OUT, 'banner-light.svg'), banner('light'));
 writeFileSync(join(OUT, 'banner-dark.svg'), banner('dark'));

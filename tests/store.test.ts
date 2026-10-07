@@ -143,7 +143,7 @@ describe('focus, quests and shop', () => {
   it('daily quests can only be claimed when done, and only once', () => {
     const q = store.dailyQuests[0];
     expect(store.claimQuest(q.def.id)).toBeNull();
-    // Satisfy every possible quest type for today.
+    // complete every quest type for today
     for (let i = 0; i < 6; i++) {
       const t = store.createTask({ title: `t${i}`, difficulty: 'epic', purpose: 'neden', repeat: i === 0 ? 'daily' : 'none', subtasks: [{ id: `s${i}`, title: 'x', done: false }] });
       store.toggleSubtask(t.id, `s${i}`);
@@ -186,7 +186,7 @@ describe('reminders', () => {
     store.createTask({ title: 'saat 10:30', time: '10:30' });
     store.createTask({ title: 'çok eski', time: '06:00' });
     store.checkReminders();
-    expect(fired).toEqual([]); // 06:00 was 4h ago: marked silently
+    expect(fired).toEqual([]); // 06:00 was 4h ago -> silent
     vi.setSystemTime(new Date(2026, 9, 3, 10, 30, 5));
     store.checkReminders();
     store.checkReminders();

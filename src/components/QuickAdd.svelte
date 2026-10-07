@@ -53,7 +53,7 @@
     </span>
   {/if}
   <button class="more" onclick={more} title={t('tasks.new')} aria-label={t('tasks.new')}><Icon name="sliders" size={16} /></button>
-  <!-- Floats over the content instead of pushing it down, so nothing jumps when focus leaves. -->
+  <!-- floats over the content so nothing jumps when focus leaves -->
   <p class="hint" class:show={focused} aria-hidden={!focused}>{t('today.quickHint')}</p>
 </div>
 

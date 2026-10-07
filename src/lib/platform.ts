@@ -1,5 +1,4 @@
-// A thin wrapper around the Electron bridge with browser fallbacks,
-// so the UI also runs in a plain browser during development.
+// wrapper over the electron preload api, with browser fallbacks so npm run dev works in a normal browser
 
 const bridge = typeof window !== 'undefined' ? window.ember : undefined;
 const LS_KEY = 'emberwise-data';
@@ -59,7 +58,7 @@ export async function appInfo(): Promise<EmberAppInfo> {
   };
 }
 
-/** Raw bytes of a bundled ambience loop (public/ambience/<name>.ogg). */
+// bytes of public/ambience/<name>.ogg
 export async function readSound(name: string): Promise<ArrayBuffer | null> {
   if (bridge && location.protocol === 'file:') {
     const bytes = await bridge.readSound(name);

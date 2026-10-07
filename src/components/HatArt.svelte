@@ -1,10 +1,10 @@
 <svelte:options namespace="svg" />
 
 <script lang="ts">
-  // Headwear, drawn in avatar space (head centre ≈ 100,92, top of hair ≈ y 44).
+  // hats in avatar coords (head center ~100,92, top of hair ~y 44)
   let { id }: { id: string } = $props();
 
-  // Laurel leaves along two arcs that meet above the brow.
+  // laurel: leaves on two arcs meeting above the forehead
   const laurel = (() => {
     const out: { x: number; y: number; a: number; c: string }[] = [];
     for (const side of [-1, 1]) {

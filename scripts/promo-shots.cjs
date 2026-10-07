@@ -1,7 +1,7 @@
 'use strict';
-// High-resolution stills of the real app for promo material (LinkedIn carousel etc.).
-// Usage: npx electron scripts/promo-shots.cjs --scene=today --out=promo/out/shots
-// Scenes: today, levelup, focus, hero, shop, stats, welcome, rewards, mixer, chars, settings, about
+// hi-res screenshots of the app for the linkedin posts
+// npx electron scripts/promo-shots.cjs --scene=today --out=promo/out/shots
+// scenes: today, levelup, focus, hero, shop, stats, welcome, rewards, mixer, chars, settings, about
 
 const fs = require('node:fs');
 const os = require('node:os');
@@ -31,7 +31,7 @@ function profile() {
   const data = seed({ lang: 'tr', theme, onboarded: true });
   data.achievements = Object.fromEntries(ACH.map((a) => [a, iso(3)]));
   Object.assign(data.settings, { sounds: false, notifications: false, motion: 'full', closeToTray: false, ambient: 'rain' });
-  // 670 XP: level 5 (Çalışkan), 30 XP away from Usta, so one quest triggers a rank-up.
+  // 670 xp = lvl 5 (Çalışkan), 30 short of Usta so one quest ranks up
   const log = [];
   [50, 60, 80, 50, 120, 60, 50, 25, 60, 50, 65].forEach((xp, i) =>
     log.push({ id: `h${i}`, t: iso(11 - i, 9 + (i % 8)), kind: i % 3 === 1 ? 'focus' : 'task', xp, gold: Math.round(xp / 4), ref: `h:${i}`, meta: i % 3 === 1 ? { m: 25, full: 1 } : { d: 'normal', c: 'cat_study' } }),
@@ -97,7 +97,7 @@ const SCENES = {
     await snap(win, 'today');
   },
   async levelup(win, h) {
-    // A hard quest (+80 XP) carries the hero from 670 XP over the Usta threshold.
+    // hard quest is +80 xp, takes us from 670 past Usta
     const idx = await h.js(`[...document.querySelectorAll('.list .task')].findIndex(t => !t.classList.contains('done') && t.querySelector('.title')?.textContent.includes('Matematik'))`);
     await h.click('.list .task .check', idx);
     await wait(1900);

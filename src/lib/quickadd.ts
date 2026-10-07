@@ -10,7 +10,7 @@ const TIME_RE = /(^|\s)(?:saat\s+|at\s+)?([01]?\d|2[0-3])[:.]([0-5]\d)(?=\s|$)/i
 const TOMORROW_RE = /(^|\s)(yarın|yarin|tomorrow)(?=\s|$)/i;
 const TODAY_RE = /(^|\s)(bugün|bugun|today)(?=\s|$)/i;
 
-/** "Matematik çalış 14:30 yarın" → title + reminder time + date. */
+// "Matematik çalış 14:30 yarın" -> title, time, date
 export function parseQuick(input: string, today: string): QuickParse | null {
   let s = ` ${input.trim()} `;
   let time: string | null = null;

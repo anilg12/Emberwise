@@ -1,5 +1,5 @@
 <script lang="ts">
-  // Ember — the little flame spirit that lives inside Emberwise.
+  // ember, the little flame mascot
   let {
     size = 96,
     mood = 'happy',

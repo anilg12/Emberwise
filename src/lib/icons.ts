@@ -1,5 +1,5 @@
-// Emberwise icon set — drawn by hand on a 24px grid, 1.8px rounded strokes.
-// Icons listed in FILLED are solid shapes instead of outlines.
+// icons: 24px grid, 1.8 stroke, round caps
+// the ones in FILLED are solid shapes
 
 export const ICONS: Record<string, string> = {
   home: '<path d="M4 10.4 12 4l8 6.4V18.5a1.5 1.5 0 0 1-1.5 1.5H15v-5.2a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1V20H5.5A1.5 1.5 0 0 1 4 18.5z"/>',

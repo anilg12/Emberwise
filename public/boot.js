@@ -1,4 +1,4 @@
-// Runs before first paint: applies the last known theme so the window never flashes.
+// runs before first paint so the window doesn't flash the wrong theme
 (function () {
   try {
     var hint = JSON.parse(localStorage.getItem('emberwise-theme-hint') || 'null');
